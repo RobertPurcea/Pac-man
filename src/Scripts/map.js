@@ -8,6 +8,7 @@
  * 			}
  *  
  * 
+ * An array that holds and initializes every element in the game. It can draw either the walls, or all the other elements.
  * 
  * 
  *  
@@ -46,50 +47,53 @@ const primitiveMap = [
 primitiveMap.width = 23;
 primitiveMap.height = 25;
 
-// const Element = (x,y,type) => {
-// 	return {
-// 		x : x,
-// 		y : y,
-// 		type : type
-// 	};
-// };
 
-// primitiveMap needs to have width and height properties 
-// window must have width and height properties
 const Map = (backgroundCanvas, foregroundCanvas) => {
-	const backgroundCtx = backgroundCanvas.getContext("2d");
-	const foregroundCtx = foregroundCanvas.getContext("2d");
 
-	// size of the elements
+	// the width/height of every element
 	const elementWidth = round(backgroundCanvas.width / primitiveMap.width, 1);
 	const elementHeight = round(backgroundCanvas.height / primitiveMap.height, 1);
 
+	// transform every static element in an object with x,y and type properties (food and walls)
+	// initializes every dinamic element in an instance of itself(Pacman, Ghost) 
 	const map = primitiveMap.map( ( element, index ) => {
-		const basicElement = {
-				x : elementWidth / 2 + elementWidth * (index % primitiveMap.width),
-				y : elementHeight / 2 + elementHeight * Math.floor( index / primitiveMap.width ),
-				type : element, 
-		};
 
-		if ( element === "C" ) {
-			return Object.assign(Pacman(foregroundCanvas, basicElement.x, basicElement.y), basicElement);
+		//	get position
+		const x = elementWidth / 2 + elementWidth * ( index % primitiveMap.width );
+		const y = elementHeight / 2 + elementHeight * Math.floor( index / primitiveMap.width );
+		
+		if ( element === "C" ) { // Pacman
+			return Pacman(foregroundCanvas, x, y);
 		} else {
-			return basicElement;
+			return {
+				x,
+				y,
+				type : element	
+			};
 		}
 	});
 
 	return Object.assign({}, {
-		getMap() {
-			console.log(map);
+		// helper
+		get info () {
+			return map;
 		},
+
+		// draw walls
 		drawStatic () {
 			map.forEach( currentItem => {
 				if ( currentItem.type === "#" ) {
-					backgroundCtx.fillStyle = "darkblue";
-					backgroundCtx.fillRect(currentItem.x - elementWidth / 2, currentItem.y - elementHeight / 2, elementWidth, 			elementHeight);
+					backgroundCanvas.getContext("2d").fillStyle = "darkblue";
+
+					// Add 1 to prevent straight lines appear at the edge of every element
+					backgroundCanvas.getContext("2d").fillRect(	currentItem.x - elementWidth / 2,
+																				currentItem.y - elementHeight / 2, 
+																				elementWidth + 1, elementHeight + 1);
 				}
 			});
 		},
+
+		// draw food, ghosts and pacman
 		drawDinamic () {
 			map.forEach(currentItem => {
 				if ( currentItem.type === "C" ) {
@@ -97,8 +101,31 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 				}
 			});
 		}
+
 	});
 };
 
 
 export default Map;
+
+
+
+		// getPacman() {
+		// 	return map.find(element => element.getType && element.getType () === "C");
+		// },
+
+
+
+
+
+
+
+
+
+// const Element = (x,y,type) => {
+// 	return {
+// 		x : x,
+// 		y : y,
+// 		type : type
+// 	};
+// };

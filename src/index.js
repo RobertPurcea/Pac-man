@@ -3,8 +3,7 @@ if (module.hot) module.hot.accept;
 console.clear();
 
 import {random, round} from "./Scripts/utility.js";
-import Map from "./Scripts/map.js";
-// import PacMan from "./Scripts/Pacman.js";
+import Map from "./Scripts/Map.js";
 
 // setup canvas
 
@@ -18,25 +17,31 @@ foregroundCanvas.height = backgroundCanvas.height = window.innerHeight;
 
 
 const map = Map(backgroundCanvas, foregroundCanvas);
-map.getMap();
+
 map.drawStatic();
-map.drawDinamic();
+
+// LOOP
+const loop = () => {
+	map.drawDinamic();
+
+	id = requestAnimationFrame(loop);
+};
+
+let id = requestAnimationFrame(loop);
+
+setTimeout(() => {
+	cancelAnimationFrame(id);
+}, 5000);
 
 
 
-// let pacman = PacMan();
+
+
+
+
+
+	// pacman.update();
+
+
+// const pacman = map.getPacman();
 // pacman.setControls("ArrowUp", "ArrowRight", "ArrowDown", "ArrowLeft");
-
-// // LOOP
-// const loop = () => {
-// 	pacman.draw();
-// 	pacman.update();
-	
-// 	id = requestAnimationFrame(loop);
-// };
-
-// let id = requestAnimationFrame(loop);
-
-// setTimeout(() => {
-// 	cancelAnimationFrame(id);
-// }, 5000);
