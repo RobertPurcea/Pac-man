@@ -68,8 +68,8 @@ const getEyePosition = state => {
 
 
 // OBJECT INTERFACE PACMAN
-const Pacman = (canvas, x, y) => {
-	
+const Pacman = (canvas, x, y, index) => {
+
 	const state = {
 		x : x,
 		y : y,
@@ -81,18 +81,19 @@ const Pacman = (canvas, x, y) => {
 		maxAnimationStage : 8,
 		isOpening : true, 
 		direction : "right",
-		type : "C"
+		type : "C",
+		index : index
 	};
 
 	return {
 
-		// change the the velocity of pacman on keypress, without executing all the function multiple times for the samekey pressed multiple consecutive times
+		// change pacman direction property on keypress
 		setControls (up, right, down, left) {
 			let lastEvent;
 
 			document.addEventListener("keydown", e => {
 
-				// ignore multiple keypresses of the same key
+				// ignore multiple consecutive keypresses of the same key
 				if (lastEvent && lastEvent.key === e.key) {
 					return;
 				}
@@ -102,20 +103,16 @@ const Pacman = (canvas, x, y) => {
 				// set velocity based on what key the user pressed 
 				switch (e.key) {
 					case up:
-						state.velY = -state.speed;
-						state.velX = 0;
+						state.direction = "up";
 						break;
 					case down:
-						state.velY = state.speed;
-						state.velX = 0;
+						state.direction = "down";
 						break;
 					case right: 
-						state.velY = 0;
-						state.velX = state.speed;
+						state.direction = "right";
 						break;
 					case left:
-						state.velX = -state.speed;
-						state.velY = 0;
+						state.direction = "left";
 						break;
 				}
 			});
@@ -159,8 +156,16 @@ const Pacman = (canvas, x, y) => {
 
 		get type () {
 			return state.type;
-		}
+		},
 
+		get index () {
+			return state.index;
+		},
+
+		// helper
+		set x ( value ) {
+			state.x = value;
+		}
 	};
 };
 

@@ -2,8 +2,32 @@ import "babel-polyfill";
 if (module.hot) module.hot.accept;
 console.clear();
 
+/**
+ * Situational: In MAP, access to pacman
+ * Access to map array, in Pacman
+ * Based on indexes, be able to modify the map from outside
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ */
+
+
 import {random, round} from "./Scripts/utility.js";
 import Map from "./Scripts/Map.js";
+import Pacman from "./Scripts/Pacman.js";
+
 
 // setup canvas
 
@@ -17,11 +41,15 @@ foregroundCanvas.height = backgroundCanvas.height = window.innerHeight;
 
 
 const map = Map(backgroundCanvas, foregroundCanvas);
+const pacman = map.getPacman();
 
 map.drawStatic();
 
+
+
 // LOOP
 const loop = () => {
+
 	map.drawDinamic();
 
 	id = requestAnimationFrame(loop);
@@ -33,6 +61,10 @@ setTimeout(() => {
 	cancelAnimationFrame(id);
 }, 5000);
 
+setTimeout(() => {
+	map.setValue(10, {value : "www"});
+	console.log(map.getValue(10));
+}, 2000);
 
 
 

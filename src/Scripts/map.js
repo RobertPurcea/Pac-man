@@ -13,7 +13,7 @@
  * 
  *  
  */
-import {round} from "./utility.js";
+import {round, indexToDoubleIndex} from "./utility.js";
 import Pacman from "./Pacman.js";
 
 // initialize primitive map
@@ -50,6 +50,8 @@ primitiveMap.height = 25;
 
 const Map = (backgroundCanvas, foregroundCanvas) => {
 
+	let pacmanIndex;
+
 	// the width/height of every element
 	const elementWidth = round(backgroundCanvas.width / primitiveMap.width, 1);
 	const elementHeight = round(backgroundCanvas.height / primitiveMap.height, 1);
@@ -63,7 +65,9 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 		const y = elementHeight / 2 + elementHeight * Math.floor( index / primitiveMap.width );
 		
 		if ( element === "C" ) { // Pacman
-			return Pacman(foregroundCanvas, x, y);
+			pacmanIndex = index; 
+			
+			return Pacman(foregroundCanvas, x, y, index);
 		} else {
 			return {
 				x,
@@ -77,6 +81,17 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 		// helper
 		get info () {
 			return map;
+		},
+		getValue (index) {
+			return map[index];
+		},
+
+		getPacman () {
+			return map[pacmanIndex];
+		},
+
+		setValue (value, index) {
+			map[index] = value;
 		},
 
 		// draw walls
@@ -100,6 +115,29 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 					currentItem.draw();
 				}
 			});
+		},
+
+		// WATCH OUT FOR THE CASES WHERE THE ELEMENT IS AT THE MARGIN OF THE ARRAY AND THE RETURN VALUE WILL BE UNDEFINED
+		// the element needs a direction and index properties
+		// the map needs a width and height properties
+		getNextTile (element) { 
+			const index = element.index;
+			const doubleIndex = indexToDoubleIndex(primitiveMap, index);
+
+			if(doubleIndex[0] === 0 || doubleIndex[0] === 22 || doubleIndex[1] === 0 || doubleIndex[1] === 24) {
+				alert("w");
+			}
+
+			switch (element.direction) {
+				case "right":
+					return map[index + 1];
+				case "left":
+					return map[index -  1];
+				case "top":
+					return map[index - primitiveMap.width];
+				case "bottom":
+					return map[index +  primitiveMap.width];
+			}
 		}
 
 	});
@@ -110,9 +148,9 @@ export default Map;
 
 
 
-		// getPacman() {
-		// 	return map.find(element => element.getType && element.getType () === "C");
-		// },
+// getPacman() {
+// 	return map.find(element => element.getType && element.getType () === "C");
+// },
 
 
 
