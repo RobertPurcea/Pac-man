@@ -17,7 +17,7 @@
  */
 
 
-import {round, random} from "./utility.js";
+import {round, random, almostIntersect} from "./utility.js";
 
 // return the angles neccesary for the pacman animation
 const getDrawingAngles = state => {
@@ -73,19 +73,46 @@ const Pacman = (canvas, x, y, index) => {
 	const state = {
 		x : x,
 		y : y,
-		velX : 4,
+		velX : 5,
 		velY : 0,
-		speed : 4,
+		speed : 5,
 		size : 10,
 		animationStage : 0,
 		maxAnimationStage : 8,
 		isOpening : true, 
+		
 		direction : "right",
 		type : "C",
-		index : index
+		index : index,
+		destination : {x : 345,y : 483},
+
+		stuck : false,
+		needsSwap : true
 	};
 
 	return {
+
+		set destination (value) {
+			state.destination = value;
+		},
+		set index (value) {
+			state.index = value;
+		},
+		get state () {
+			return state;
+		},
+
+		// pacman almost reached the destination -->> change coordinates of pacman to match the coordinates of the destination
+		// without this, pacman will have cases when it crosses over the destination point without actually touching it (because the speed is higher than 1)
+		reachDestination () {
+			if (state.x === state.destination.x) {return true;}
+
+			if ( almostIntersect ( state.x, state.y, state.destination.x, state.destination.y, state.speed ) ) {
+				state.x = state.destination.x;
+				state.y = state.destination.y;
+				return true;
+			}
+		},
 
 		// change pacman direction property on keypress
 		setControls (up, right, down, left) {
@@ -153,57 +180,23 @@ const Pacman = (canvas, x, y, index) => {
 			ctx.fillStyle = "black";
 			ctx.fill();
 		},
-
-		get type () {
-			return state.type;
-		},
-
-		get index () {
-			return state.index;
-		},
-
-		// helper
-		set x ( value ) {
-			state.x = value;
-		}
 	};
 };
 
 export default Pacman;
 
+		// get destination () {
+		// 	return state.destination;
+		// },
 
+		// get direction () {
+		// 	return state.direction;
+		// },
 
-// // based on the current direction and array positioning, return the next empty space that pacman is heading to
-// // return null if the next tile is a wall
-// nextEmptyTile () {
-// 	let nextTile;
+		// get type () {
+		// 	return state.type;
+		// },
 
-// 	switch ( state.direction ) {
-// 		case "right":
-// 			nextTile = ""
-// 	}
-// }
-
-
-
-
-
-// // execute a function based on the direction of the pacman
-// const forEveryDirection = (state, fnUp, fnRight, fnDown, fnLeft) => {
-// 	// up
-// 	if ( state.velY < 0 ) {
-// 		fnUp();
-// 	}
-// 	// right
-// 	if ( state.velX > 0 ) {
-// 		fnRight();
-// 	}
-// 	// down
-// 	if ( state.velY > 0 ) {
-// 		fnDown();
-// 	}
-// 	// left 
-// 	if ( state.velX < 0 ) {
-// 		fnLeft();
-// 	}
-// };
+		// get position () {
+		// 	return [state.x, state.y, state.index];
+		// },

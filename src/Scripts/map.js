@@ -53,12 +53,12 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 	let pacmanIndex;
 
 	// the width/height of every element
-	const elementWidth = round(backgroundCanvas.width / primitiveMap.width, 1);
-	const elementHeight = round(backgroundCanvas.height / primitiveMap.height, 1);
+	const elementWidth = backgroundCanvas.width / primitiveMap.width;
+	const elementHeight = backgroundCanvas.height / primitiveMap.height;
 
 	// transform every static element in an object with x,y and type properties (food and walls)
 	// initializes every dinamic element in an instance of itself(Pacman, Ghost) 
-	const map = primitiveMap.map( ( element, index ) => {
+	let map = primitiveMap.map( ( element, index ) => {
 
 		//	get position
 		const x = elementWidth / 2 + elementWidth * ( index % primitiveMap.width );
@@ -72,63 +72,85 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 			return {
 				x,
 				y,
-				type : element	
+				type : element,
+				index 
 			};
 		}
 	});
 
 	return Object.assign({}, {
-		// helper
-		get info () {
-			return map;
+
+
+
+		help () {
+			map.forEach(el => {console.log(el.x);});
+			console.log(elementWidth, elementHeight);
 		},
+
 		getValue (index) {
 			return map[index];
 		},
-
-		getPacman () {
-			return map[pacmanIndex];
-		},
-
 		setValue (value, index) {
 			map[index] = value;
 		},
 
+		swap ( index1, index2 ) {
+			let temp = map[index1];
+			map[index1] = map[index2];
+			map[index2] = temp;
+		},
+
+		swapIndexes (object1, object2) {
+			let temp = object1.index;
+			object1.index = object2.index;
+			object2.index = temp;	
+		},
+
+		// needed for pacman modifications in index.js
+		getPacman () {
+			return map[pacmanIndex];
+		},
+
+
+
+
+
 		// draw walls
 		drawStatic () {
 			map.forEach( currentItem => {
-				if ( currentItem.type === "#" ) {
-					backgroundCanvas.getContext("2d").fillStyle = "darkblue";
+				if ( currentItem.type === "#") {
+					backgroundCanvas.getContext("2d").strokeStyle = "darkblue";
 
-					// Add 1 to prevent straight lines appear at the edge of every element
-					backgroundCanvas.getContext("2d").fillRect(	currentItem.x - elementWidth / 2,
+					backgroundCanvas.getContext("2d").strokeRect(	currentItem.x - elementWidth / 2,
 																				currentItem.y - elementHeight / 2, 
-																				elementWidth + 1, elementHeight + 1);
+																				elementWidth, elementHeight);
 				}
 			});
 		},
 
 		// draw food, ghosts and pacman
+		// needs state access for type property
 		drawDinamic () {
 			map.forEach(currentItem => {
-				if ( currentItem.type === "C" ) {
+				if ( currentItem.state && currentItem.state.type === "C" ) {
 					currentItem.draw();
 				}
 			});
 		},
 
-		// WATCH OUT FOR THE CASES WHERE THE ELEMENT IS AT THE MARGIN OF THE ARRAY AND THE RETURN VALUE WILL BE UNDEFINED
-		// the element needs a direction and index properties
-		// the map needs a width and height properties
+		// need access to state property(currently accessed with a getter)
 		getNextTile (element) { 
-			const index = element.index;
+			const index = element.state.index;
 			const doubleIndex = indexToDoubleIndex(primitiveMap, index);
+			
 
-			if(doubleIndex[0] === 0 || doubleIndex[0] === 22 || doubleIndex[1] === 0 || doubleIndex[1] === 24) {
-				alert("w");
-			}
+			// What happens when the next tile is out of the map(ex: map[-1])
+			// if(doubleIndex[0] === 0 || doubleIndex[0] === 22 || doubleIndex[1] === 0 || doubleIndex[1] === 24) {
+			// 	alert("w");
+			// }
 
-			switch (element.direction) {
+
+			switch (element.state.direction) {
 				case "right":
 					return map[index + 1];
 				case "left":
@@ -145,6 +167,20 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 
 
 export default Map;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -20,3 +20,7 @@ canvas{
 	background-color: black;
 }
 
+#foreground {
+	border: 1px solid "red";
+}
+
