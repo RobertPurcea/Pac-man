@@ -108,27 +108,12 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 
 	return Object.assign({}, {
 
-
-
-		// info () {
-		// 	console.logelementWidth, elementHeight);
-		// },
-
 		getValue (index) {
 			return map[index];
 		},
 		setValue (value, index) {
 			map[index] = value;
 		},
-
-
-		swapIndexes (object1, object2) {
-			let temp = object1.state.index;
-			object1.state.index = object2.index;
-			object2.index = temp;	
-		},
-
-		// needed for pacman modifications in index.js
 		get pacman () {
 			return map[pacmanIndex];
 		},
@@ -136,6 +121,15 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 
 
 
+
+
+
+		swapIndexes (object1, object2) {
+			let temp = object1.state.index;
+			object1.state.index = object2.index;
+			object2.index = temp;	
+		},
+		
 		// swap two objects
 		swap ( index1, index2 ) {
 			let temp = map[index1];
@@ -149,9 +143,7 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 				if ( currentItem.type === "#") {
 					backgroundCanvas.getContext("2d").strokeStyle = "darkblue";
 
-					backgroundCanvas.getContext("2d").strokeRect(	currentItem.x - elementWidth / 2,
-																				currentItem.y - elementHeight / 2, 
-																				elementWidth, elementHeight);
+					backgroundCanvas.getContext("2d").strokeRect( currentItem.x - elementWidth / 2,currentItem.y - elementHeight / 2, elementWidth, elementHeight);
 				}
 			});
 		},
@@ -167,21 +159,24 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 		},
 
 		// need access to state property(currently accessed with a getter)
-		getNextTile (element) { 
+		getNextTile (element, option) { 
 			const index = element.state.index;
 
 			element.oldX = element.state.x;
 			element.oldY = element.state.y;
 			
-			
-			
+						
 			// const doubleIndex = indexToDoubleIndex(primitiveMap, index);
 			// What happens when the next tile is out of the map(ex: map[-1])
 			// if(doubleIndex[0] === 0 || doubleIndex[0] === 22 || doubleIndex[1] === 0 || doubleIndex[1] === 24) {
 			// 	alert("w");
 			// }
-			
-			switch (element.state.direction) {
+
+			let direction = option === "user" ? element.state.userDirection : element.state.validDirection;
+
+			console.log(  );
+
+			switch ( direction ) {
 				case "right":
 					return map[index + 1];
 				case "left":
@@ -191,7 +186,7 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 				case "down":
 					return map[index + primitiveMap.width];
 				default:
-						alert(element.state.direction + "   !!!!!!!!!!!");
+						alert(direction + "  getNextTile() !!!!!!!!!!!");
 				
 			}
 		}

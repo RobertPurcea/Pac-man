@@ -34,6 +34,7 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 		move () {
 			const pacman = state.pacman;
 			const pState = pacman.state; // less writing
+			
 
 			if ( !pState.stuck && pacman.reachDestination() ) {
 				
@@ -46,17 +47,21 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 					pState.destination.x = pacman.oldX;
 					pState.destination.y = pacman.oldY;
 				}
+				
 
-				// && pacman current direction 
+				if ( ( pState.userDirection !== pState.validDirection ) && ( state.map.getNextTile( pacman, "user").type !== "#" ) ) {
+					pState.validDirection = pState.userDirection;
+				}
+
+
 				if ( state.map.getNextTile( pacman ).type === "#" ) {
 					pState.stuck = true;
 					pState.needsSwap = false;
-					pState.reached = true;
-
+					pState.isStuckAndSwapped = true;
 				} else {
 					pState.stuck = false;
 					pState.needsSwap = true;
-					pState.reached = false;
+					pState.isStuckAndSwapped = false;
 					pState.destination = state.map.getNextTile( pacman );
 					pacman.changeDirection();
 				}

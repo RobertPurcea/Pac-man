@@ -1,9 +1,4 @@
 /**
- * Every reqAnimationFrame, check if the position of the pacman(x,y) is equal to the position of it's destination
- * 	If NO, run pacman.update();
- * 	If YES,  set map[destinationIndex] = pacman;
- * 				set map[pacmanIndex] = empty space;
- * 				if the next tile is an empty space, set the destination equal to it ELSE set destination = null
  * 
  * 
  * 
@@ -17,7 +12,7 @@
  */
 
 
-import {round, random, almostIntersect} from "./utility.js";
+import {round, random, almostIntersect, intersect} from "./utility.js";
 
 // return the angles neccesary for the pacman animation
 const getDrawingAngles = state => {
@@ -73,23 +68,25 @@ const Pacman = (canvas, x, y, index) => {
 	const state = {
 		x : x,
 		y : y,
+		index : index,
+
 		velX : 3,
 		velY : 0,
 		speed : 3,
+
 		size : 10,
 		animationStage : 0,
 		maxAnimationStage : 8,
 		isOpening : true, 
 
-		wishedDirection : "right",
-		direction : "right",
-		type : "C",
-		index : index,
+		userDirection : "right",
+		validDirection : "right",
 		destination : null,
 
+		type : "C",
 		stuck : false,
 		needsSwap : true,
-		reached : false
+		isStuckAndSwapped : false
 	};
 
 	return {
@@ -109,21 +106,22 @@ const Pacman = (canvas, x, y, index) => {
 		
 
 
-		// pacman almost reached the destination -->> change coordinates of pacman to match the coordinates of the destination
+		// pacman almost reached the destination -->> change coordinates of pacman to match the coordinates of the destination, return true
+		// pacman is at the destination -->> return true
 		// without this, pacman will have cases when it crosses over the destination point without actually touching it (because the speed is higher than 1)
 		reachDestination () {
-			
-			if (state.reached) {return true;}
+			const coordinates = [state.x, state.y, state.destination.x, state.destination.y];
+
+			if ( state.isStuckAndSwapped ) {return true;}
 						
-			if ( almostIntersect ( state.x, state.y, state.destination.x, state.destination.y, state.speed ) ) {
+			if ( almostIntersect ( ...coordinates, state.speed ) ) {
 				state.x = state.destination.x;
 				state.y = state.destination.y;
 				return true;
 			}
-			
 		},
 
-		// change pacman direction property on keypress
+		// change pacman userDirection property on keypress and set state.stuck property to false
 		setControls (up, right, down, left) {
 			let lastEvent;
 
@@ -141,27 +139,25 @@ const Pacman = (canvas, x, y, index) => {
 				// set velocity based on what key the user pressed 
 				switch (e.key) {
 					case up:
-						state.direction = "up";
+						state.userDirection = "up";
 						break;
 					case down:
-						state.direction = "down";
+						state.userDirection = "down";
 						break;
 					case right: 
-						state.direction = "right";
+						state.userDirection = "right";
 						break;
 					case left:
-						state.direction = "left";
+						state.userDirection = "left";
 						break;
 					default:
-						alert("WRONG KEY");
+						console.log( "In pacman switch key handler" + e.key );
 				}
-
-				// console.log(state.direction);
 			});
 		},
 
 		changeDirection () {
-			switch (state.direction) {
+			switch ( state.validDirection ) {
 				case "right":
 					state.velX = state.speed;
 					state.velY = 0;
@@ -179,7 +175,7 @@ const Pacman = (canvas, x, y, index) => {
 					state.velY = state.speed;
 					break;
 				default:
-						alert("In change direction : " + "state.direction");
+						alert( "In change direction : " + state.validDirection );
 			}
 		},
 
@@ -222,19 +218,3 @@ const Pacman = (canvas, x, y, index) => {
 };
 
 export default Pacman;
-
-		// get destination () {
-		// 	return state.destination;
-		// },
-
-		// get direction () {
-		// 	return state.direction;
-		// },
-
-		// get type () {
-		// 	return state.type;
-		// },
-
-		// get position () {
-		// 	return [state.x, state.y, state.index];
-		// },

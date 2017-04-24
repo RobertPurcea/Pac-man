@@ -15,8 +15,13 @@ const almostIntersect = (x1, y1, x2, y2, speed) => {
 	return distance <= speed ? true : false;
 };
 
+// two points are in the same position  -->>  return true
+const intersect = (x1, y1, x2, y2) => {
+	return Math.abs(Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)) === 0 ? true : false;
+};
 
-export {round, random, indexToDoubleIndex, almostIntersect};
+
+export {round, random, indexToDoubleIndex, almostIntersect, intersect};
 
 
 
