@@ -1,18 +1,28 @@
-/**
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
+/** How Pacman works
+ * Pacman updates it's position 60 times per second, unless he either reached his destination object or he is stuck;
+ 
+ * After pacman reaches the center of the destination, he is actually moved in the coresponding place in the map array;
+ 
+ * The keyhandler changes the  boolean stuck to false in order to allow the loop of the game to check once more if the direction, now
+	changed	by the user also by this keyhandler is a good one (no wall upfront). The keyhandler does not modify the validDirection directly,
+	instead it modifies the userDirection property. If userDirection is a good direction(it is checked in the game.start() method), than the
+	validDirection is assigned the value of userDirection.
+	
+ * The animation progress is directly affected by how much pacman moves. Thus, when pacman is stuck, the animation stops as well.
+ 
+ * reachedDestination and stuck are needed to allow verifying if the pacman's direction is good after he has been stuck.
+ 
+ * After pacman arrives to a new center of a tile(a new destination), he needs to update his position in the map array as well. The purpose of
+	"needsSwap" is to tell whether pacman has already updated his position in the map. 
+	
+ * animationStage, maxAnimationStage and isOpening are needed for the animation of pacman (opening and closing mouth)
+ 
+ * The changeDirection() function changes pacman's velocity based on the current valid direction
  * 
  */
 
 
-import {round, random, almostIntersect, intersect} from "./utility.js";
+import {round, random, almostIntersect} from "./utility.js";
 
 // return the angles neccesary for the pacman animation
 const getDrawingAngles = state => {
@@ -63,7 +73,7 @@ const getEyePosition = state => {
 
 
 // OBJECT INTERFACE PACMAN
-const Pacman = (canvas, x, y, index) => {
+const Pacman = (canvas, x, y, index, maxPosX, maxPosY) => {
 
 	const state = {
 		x : x,
@@ -106,9 +116,8 @@ const Pacman = (canvas, x, y, index) => {
 		
 
 
-		// pacman almost reached the destination -->> change coordinates of pacman to match the coordinates of the destination, return true
-		// pacman is at the destination -->> return true
-		// without this, pacman will have cases when it crosses over the destination point without actually touching it (because the speed is higher than 1)
+		/* pacman almost reached the destination -->> change coordinates of pacman to match the coordinates of the destination, return true
+		without this, pacman will have cases when it crosses over the destination point without actually touching it (because the speed is higher than 1) */
 		reachDestination () {
 			const coordinates = [state.x, state.y, state.destination.x, state.destination.y];
 
@@ -156,6 +165,7 @@ const Pacman = (canvas, x, y, index) => {
 			});
 		},
 
+		// change the speed of pacman based on the current validDirection property
 		changeDirection () {
 			switch ( state.validDirection ) {
 				case "right":
@@ -181,6 +191,7 @@ const Pacman = (canvas, x, y, index) => {
 
 		// update position and animation progress
 		update () {
+			
 			// if pacman is opening his mouth, increment animationStage, else decrement
 			state.animationStage = state.isOpening ? ++state.animationStage : --state.animationStage;
 
@@ -192,7 +203,24 @@ const Pacman = (canvas, x, y, index) => {
 				state.isOpening = true;
 			}
 			
+			
+			
 			// update position
+			//	if pacman gets out of the map, he is relocated in the opposite side of the map
+			
+			if ( state.x > maxPosX ) {
+				state.x =  0;
+			}
+			if ( state.y > maxPosY ) {
+				state.y = 0;
+			}
+			if ( state.x < 0 ) {
+				state.x =  maxPosX;
+			}
+			if ( state.y < 0 ) {
+				state.y = maxPosY;
+			}
+							
 			state.x += state.velX;
 			state.y += state.velY;
 		},
@@ -218,3 +246,9 @@ const Pacman = (canvas, x, y, index) => {
 };
 
 export default Pacman;
+
+
+
+
+
+

@@ -13,7 +13,7 @@
  * 
  *  
  */
-import {round, indexToDoubleIndex} from "./utility.js";
+import {round, indexToDoubleIndex, doubleIndexToIndex} from "./utility.js";
 import Pacman from "./Pacman.js";
 
 let primitiveMap = [
@@ -74,6 +74,8 @@ const normalMap = [
 ];
 primitiveMap.width = 23;
 primitiveMap.height = 25;
+const width = 23;
+const height = 25;
 
 
 const Map = (backgroundCanvas, foregroundCanvas) => {
@@ -95,7 +97,9 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 		if ( element === "C" ) { // Pacman
 			pacmanIndex = index; 
 			
-			return Pacman(foregroundCanvas, x, y, index);
+			const maxPosX = backgroundCanvas.width;
+			const maxPosY = backgroundCanvas.height;
+			return Pacman(foregroundCanvas, x, y, index, maxPosX, maxPosY);
 		} else {
 			return {
 				x,
@@ -148,7 +152,6 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 			});
 		},
 
-		// draw food, ghosts and pacman
 		// needs state access for type property
 		drawDinamic () {
 			map.forEach(currentItem => {
@@ -158,23 +161,46 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 			});
 		},
 
-		// need access to state property(currently accessed with a getter)
+		/* get the next tile in located in the chosen direction(the default direction is pacman's validDirection property. If you specify user
+		as option, the tile will be returned based on  pacman's userDirection property) */
 		getNextTile (element, option) { 
 			const index = element.state.index;
 
 			element.oldX = element.state.x;
 			element.oldY = element.state.y;
 			
-						
-			// const doubleIndex = indexToDoubleIndex(primitiveMap, index);
-			// What happens when the next tile is out of the map(ex: map[-1])
-			// if(doubleIndex[0] === 0 || doubleIndex[0] === 22 || doubleIndex[1] === 0 || doubleIndex[1] === 24) {
-			// 	alert("w");
-			// }
-
 			let direction = option === "user" ? element.state.userDirection : element.state.validDirection;
+						
+						
+			//	If the next tile is out of the map(pacman is on the margin of the map) return the tile located at the beginning of the opposite 
+			//side of the map
+			const doubleIndex = indexToDoubleIndex(primitiveMap, index);
+			
+			if ( doubleIndex[0] === 0 || doubleIndex[0] === ( width - 1 ) || doubleIndex[1] === 0 || doubleIndex[1] === ( height - 1 ) ) {
+				
+				let isGoingOut = false;
+				
+				if ( doubleIndex[0] === 0 && direction === "left" ) {
+					doubleIndex[0] = width - 1;
+					isGoingOut = true;
+				} else if ( doubleIndex[0] === ( width - 1 ) && direction === "right" ) {
+					doubleIndex[0] = 0;
+					isGoingOut = true;
+				}
+				
+				if ( doubleIndex[1] === 0 && direction === "up" ) {
+					doubleIndex[1] = height - 1;
+					isGoingOut = true;
+				} else if ( doubleIndex[1] === ( height - 1 ) && direction === "down" ) {
+					doubleIndex[1] = 0;
+					isGoingOut = true;
+				}
+				
+				if ( isGoingOut ) {
+					return map[doubleIndexToIndex( primitiveMap, ...doubleIndex )];
+				}
+			}
 
-			console.log(  );
 
 			switch ( direction ) {
 				case "right":
