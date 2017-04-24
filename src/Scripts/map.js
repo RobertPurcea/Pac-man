@@ -16,8 +16,36 @@
 import {round, indexToDoubleIndex} from "./utility.js";
 import Pacman from "./Pacman.js";
 
+let primitiveMap = [
+	'#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#',
+	'#',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','#',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','#',
+	'#','@','#','#','#',' ','#','#','#','#',' ','#',' ','#','#','#','#',' ','#','#','#','@','#',
+	'#',' ','#','#','#',' ','#','#','#','#',' ','#',' ','#','#','#','#',' ','#','#','#',' ','#',
+	'#',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','#',
+	'#',' ','#','#','#',' ','#',' ','#','#','#','#','#','#','#',' ','#',' ','#','#','#',' ','#',
+	'#',' ',' ',' ',' ',' ','#',' ','#','#','#','#','#','#','#',' ','#',' ',' ',' ',' ',' ','#',
+	'#','#','#','#','#',' ','#',' ',' ',' ',' ','#',' ',' ',' ',' ','#',' ','#','#','#','#','#',
+	'#','#','#','#','#',' ','#','#','#','#',' ','#',' ','#','#','#','#',' ','#','#','#','#','#',
+	'#','#','#','#','#',' ','#',' ',' ',' ',' ',' ',' ',' ',' ',' ','#',' ','#','#','#','#','#',
+	'#','#','#','#','#',' ','#',' ','#','#','#',' ','#','#','#',' ','#',' ','#','#','#','#','#',
+	' ',' ',' ',' ',' ',' ',' ',' ','#','M','M',' ','M','M','#',' ',' ',' ',' ',' ',' ',' ',' ',
+	'#','#','#','#','#',' ','#',' ','#','#','#','#','#','#','#',' ','#',' ','#','#','#','#','#',
+	'#','#','#','#','#',' ','#',' ',' ',' ',' ',' ',' ',' ',' ',' ','#',' ','#','#','#','#','#',
+	'#','#','#','#','#',' ','#',' ','#','#','#','#','#','#','#',' ','#',' ','#','#','#','#','#',
+	'#','#','#','#','#',' ','#',' ','#','#','#','#','#','#','#',' ','#',' ','#','#','#','#','#',
+	'#',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',"#",' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',"#",
+	'#',' ','#','#','#',' ','#','#','#','#',' ',"#",' ','#','#','#','#',' ','#','#','#',' ',"#",
+	'#','@',' ',' ','#',' ',' ',' ',' ',' ',' ',"C",' ','#',' ',' ',' ',' ','#',' ',' ','@',"#",
+	'#','#','#',' ','#',' ','#',' ','#','#','#','#','#','#','#',' ','#',' ','#',' ','#','#','#',
+	'#',' ',' ',' ',' ',' ','#',' ',' ',' ',' ','#',' ',' ',' ',' ','#',' ',' ',' ',' ',' ','#',
+	'#',' ','#','#','#','#','#','#','#','#',' ','#',' ','#','#','#','#','#','#','#','#',' ','#',
+	'#',' ','#','#','#','#','#','#','#','#',' ','#',' ','#','#','#','#','#','#','#','#',' ','#',
+	'#',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','#',
+	'#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#'
+];
+
 // initialize primitive map
-const primitiveMap = [
+const normalMap = [
 	'#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#',
 	'#','*','*','*','*','*','*','*','*','*','*','#','*','*','*','*','*','*','*','*','*','*','#',
 	'#','@','#','#','#','*','#','#','#','#','*','#','*','#','#','#','#','*','#','#','#','@','#',
@@ -82,10 +110,9 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 
 
 
-		help () {
-			map.forEach(el => {console.log(el.x);});
-			console.log(elementWidth, elementHeight);
-		},
+		// info () {
+		// 	console.logelementWidth, elementHeight);
+		// },
 
 		getValue (index) {
 			return map[index];
@@ -94,26 +121,27 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 			map[index] = value;
 		},
 
-		swap ( index1, index2 ) {
-			let temp = map[index1];
-			map[index1] = map[index2];
-			map[index2] = temp;
-		},
 
 		swapIndexes (object1, object2) {
-			let temp = object1.index;
-			object1.index = object2.index;
+			let temp = object1.state.index;
+			object1.state.index = object2.index;
 			object2.index = temp;	
 		},
 
 		// needed for pacman modifications in index.js
-		getPacman () {
+		get pacman () {
 			return map[pacmanIndex];
 		},
 
 
 
 
+		// swap two objects
+		swap ( index1, index2 ) {
+			let temp = map[index1];
+			map[index1] = map[index2];
+			map[index2] = temp;
+		},
 
 		// draw walls
 		drawStatic () {
@@ -141,24 +169,30 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 		// need access to state property(currently accessed with a getter)
 		getNextTile (element) { 
 			const index = element.state.index;
-			const doubleIndex = indexToDoubleIndex(primitiveMap, index);
-			
 
+			element.oldX = element.state.x;
+			element.oldY = element.state.y;
+			
+			
+			
+			// const doubleIndex = indexToDoubleIndex(primitiveMap, index);
 			// What happens when the next tile is out of the map(ex: map[-1])
 			// if(doubleIndex[0] === 0 || doubleIndex[0] === 22 || doubleIndex[1] === 0 || doubleIndex[1] === 24) {
 			// 	alert("w");
 			// }
-
-
+			
 			switch (element.state.direction) {
 				case "right":
 					return map[index + 1];
 				case "left":
-					return map[index -  1];
-				case "top":
+					return map[index - 1];
+				case "up":
 					return map[index - primitiveMap.width];
-				case "bottom":
-					return map[index +  primitiveMap.width];
+				case "down":
+					return map[index + primitiveMap.width];
+				default:
+						alert(element.state.direction + "   !!!!!!!!!!!");
+				
 			}
 		}
 

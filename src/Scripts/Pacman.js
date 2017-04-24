@@ -73,21 +73,23 @@ const Pacman = (canvas, x, y, index) => {
 	const state = {
 		x : x,
 		y : y,
-		velX : 5,
+		velX : 3,
 		velY : 0,
-		speed : 5,
+		speed : 3,
 		size : 10,
 		animationStage : 0,
 		maxAnimationStage : 8,
 		isOpening : true, 
-		
+
+		wishedDirection : "right",
 		direction : "right",
 		type : "C",
 		index : index,
-		destination : {x : 345,y : 483},
+		destination : null,
 
 		stuck : false,
-		needsSwap : true
+		needsSwap : true,
+		reached : false
 	};
 
 	return {
@@ -101,17 +103,24 @@ const Pacman = (canvas, x, y, index) => {
 		get state () {
 			return state;
 		},
+		info () {
+			console.log(state, state.destination);
+		},
+		
+
 
 		// pacman almost reached the destination -->> change coordinates of pacman to match the coordinates of the destination
 		// without this, pacman will have cases when it crosses over the destination point without actually touching it (because the speed is higher than 1)
 		reachDestination () {
-			if (state.x === state.destination.x) {return true;}
-
+			
+			if (state.reached) {return true;}
+						
 			if ( almostIntersect ( state.x, state.y, state.destination.x, state.destination.y, state.speed ) ) {
 				state.x = state.destination.x;
 				state.y = state.destination.y;
 				return true;
 			}
+			
 		},
 
 		// change pacman direction property on keypress
@@ -127,6 +136,8 @@ const Pacman = (canvas, x, y, index) => {
 
 				lastEvent = e;
 
+				state.stuck = false;
+				
 				// set velocity based on what key the user pressed 
 				switch (e.key) {
 					case up:
@@ -141,8 +152,35 @@ const Pacman = (canvas, x, y, index) => {
 					case left:
 						state.direction = "left";
 						break;
+					default:
+						alert("WRONG KEY");
 				}
+
+				// console.log(state.direction);
 			});
+		},
+
+		changeDirection () {
+			switch (state.direction) {
+				case "right":
+					state.velX = state.speed;
+					state.velY = 0;
+					break;
+				case "left":
+					state.velX = -state.speed;
+					state.velY = 0;
+					break;
+				case "up":
+					state.velX = 0;
+					state.velY = -state.speed;
+					break;
+				case "down":
+					state.velX = 0;
+					state.velY = state.speed;
+					break;
+				default:
+						alert("In change direction : " + "state.direction");
+			}
 		},
 
 		// update position and animation progress
