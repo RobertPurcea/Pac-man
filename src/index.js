@@ -2,17 +2,6 @@ import "babel-polyfill";
 if (module.hot) module.hot.accept;
 console.clear();
 
-/**
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- */
-
 import Game from "./Scripts/Game.js";
 
 
@@ -27,6 +16,7 @@ const game = Game( backgroundCanvas, foregroundCanvas );
 game.initialize();
 
    
+	
 	
 // GAME LOOP
 
@@ -45,11 +35,11 @@ let id = requestAnimationFrame(loop);
 
 
 
-// cancel loop after 5 seconds
+// cancel loop after seconds
 
 setTimeout(() => {
 	cancelAnimationFrame(id);
-}, 20000);
+}, 10000);
 
 
 

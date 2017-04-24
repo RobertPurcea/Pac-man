@@ -1,5 +1,3 @@
-//import {random, round, almostIntersect} from "./Scripts/utility.js";
-//import Pacman from "./Scripts/Pacman.js";
 import Map from "./Map.js";
 
 
@@ -35,10 +33,10 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 			const pacman = state.pacman;
 			const pState = pacman.state; // less writing
 			
-
+			// 
 			if ( !pState.stuck && pacman.reachDestination() ) {
 				
-				// UPDATE INFO for pacman and it's destination tile
+				// When pacman reached his current destination, swap the two objects in the map collection, and update their coordinates and indexes
 				if ( pState.needsSwap ) {
 					state.map.swap( pState.index, pState.destination.index );
 
@@ -49,38 +47,32 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 				}
 				
 
+				// If the user changes the direction, and it is VALID(no wall upfront), pacman will follow that direction
 				if ( ( pState.userDirection !== pState.validDirection ) && ( state.map.getNextTile( pacman, "user").type !== "#" ) ) {
 					pState.validDirection = pState.userDirection;
 				}
 
-
+				
+				// If the next tile is a wall, freeze pacman until his direction is changed 
 				if ( state.map.getNextTile( pacman ).type === "#" ) {
+					
 					pState.stuck = true;
 					pState.needsSwap = false;
-					pState.isStuckAndSwapped = true;
+					pState.reachedDestination = true;
+					
 				} else {
+					//	ELSE update the direction and destination to match the next tile in front of pacman and unfreeze him
+					
 					pState.stuck = false;
 					pState.needsSwap = true;
-					pState.isStuckAndSwapped = false;
+					pState.reachedDestination = false;
 					pState.destination = state.map.getNextTile( pacman );
 					pacman.changeDirection();
 				}
-			} else if ( !pState.stuck ){
+			} else if ( !pState.stuck ){  // update pacman's position
 				pacman.update();
 			}
 		},
-
-
-
-
-
-
-
-
-		info () {
-			console.log(state.pacman);
-		}
- 
 	});
 };
 

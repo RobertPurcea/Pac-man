@@ -86,7 +86,7 @@ const Pacman = (canvas, x, y, index) => {
 		type : "C",
 		stuck : false,
 		needsSwap : true,
-		isStuckAndSwapped : false
+		reachedDestination : false
 	};
 
 	return {
@@ -112,7 +112,7 @@ const Pacman = (canvas, x, y, index) => {
 		reachDestination () {
 			const coordinates = [state.x, state.y, state.destination.x, state.destination.y];
 
-			if ( state.isStuckAndSwapped ) {return true;}
+			if ( state.reachedDestination ) {return true;}
 						
 			if ( almostIntersect ( ...coordinates, state.speed ) ) {
 				state.x = state.destination.x;
