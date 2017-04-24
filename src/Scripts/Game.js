@@ -48,13 +48,14 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 				
 
 				// If the user changes the direction, and it is VALID(no wall upfront), pacman will follow that direction
-				if ( ( pState.userDirection !== pState.validDirection ) && ( state.map.getNextTile( pacman, "user").type !== "#" ) ) {
+				if ( ( pState.userDirection !== pState.validDirection ) && ( state.map.getNextTile( pacman, "user").type !== "#" && 
+				state.map.getNextTile( pacman, "user").type !== "-" ) ) {
 					pState.validDirection = pState.userDirection;
 				}
 
 				
 				// If the next tile is a wall, freeze pacman until his direction is changed 
-				if ( state.map.getNextTile( pacman ).type === "#" ) {
+				if ( state.map.getNextTile( pacman ).type === "#" || state.map.getNextTile( pacman ).type === "-") {
 					
 					pState.stuck = true;
 					pState.needsSwap = false;
