@@ -3,7 +3,7 @@ import { clear } from './utility';
 
 const Game = (backgroundCanvas, foregroundCanvas) => {
 	const state = {
-
+		score: 0,
 	};
 
 	return Object.assign({}, {
@@ -29,9 +29,8 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 			const map = state.map;
 			const layout = map.getMap();
 
-			// console.log(pacman.info());
 
-
+			// pacman turn
 			if (!pacman.isStuck() && pacman.reachDestination()) {
 				/**
 				 * Remove pacman from the last tile's dinamic
@@ -64,6 +63,9 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 			} else if (!pacman.isStuck()) {
 				pacman.update();
 			}
+
+			// ghosts
+			// ...
 		},
 
 		draw() {

@@ -27,3 +27,32 @@ How Pacman works
   The changeDirection() function changes pacman's velocity based on the current valid direction
  
  
+
+
+
+
+
+
+
+
+
+
+
+next tile is food or powerup -> run collisionDetection betweem pacman and the next 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
