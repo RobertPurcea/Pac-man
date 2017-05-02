@@ -1,23 +1,25 @@
 import "babel-polyfill"; 
+
 if (module.hot) module.hot.accept;
 console.clear();
 
 import Game from "./Scripts/Game.js";
-
-
+import {getDirectionsToEmptyTiles} from "./Scripts/utility.js";
+import Map from "./Scripts/Map.js";
 
 // SETUP 
 
 const backgroundCanvas = document.querySelector("#background");
 const foregroundCanvas = document.querySelector("#foreground");
 
-const game = Game( backgroundCanvas, foregroundCanvas );
-
+const game = Game(backgroundCanvas, foregroundCanvas);
 game.initialize();
 
-   
-	
-	
+
+
+
+
+
 // GAME LOOP
 
 const loop = () => {
@@ -30,50 +32,11 @@ const loop = () => {
 let id = requestAnimationFrame(loop);
 
 
-
-
-
-
-
 // cancel loop after seconds
 
 setTimeout(() => {
 	cancelAnimationFrame(id);
 }, 10000);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

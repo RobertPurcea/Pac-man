@@ -1,80 +1,87 @@
-import Map from "./Map.js";
-
+import Map from './Map';
+import { clear } from './utility';
 
 const Game = (backgroundCanvas, foregroundCanvas) => {
-
-	const backgroundCtx = backgroundCanvas.getContext("2d");
-	const foregroundCtx = foregroundCanvas.getContext("2d");
-
 	const state = {
 
 	};
 
 	return Object.assign({}, {
 
-		initialize () {
+		initialize() {
 			foregroundCanvas.width = backgroundCanvas.width = 690;
 			foregroundCanvas.height = backgroundCanvas.height = 650;
 
 			state.map = Map(backgroundCanvas, foregroundCanvas);
-			state.pacman = state.map.pacman;
 
 			state.map.drawStatic();
 			state.map.drawDinamic();
-			state.pacman.setControls( "w","d","s","a" );
-			state.pacman.destination = state.map.getNextTile( state.pacman );
+
+			// set pacman
+			const pacman = state.map.getPacman();
+			pacman.setControls('w', 'd', 's', 'a');
+			pacman.state.destination = state.map.getNextTile(pacman.state.index, pacman.state.currentDirection);
 		},
 
-		draw () {
-			state.map.drawDinamic();
-		},
 
-		move () {
-			const pacman = state.pacman;
-			const pState = pacman.state; // less writing
-			
-			// 
-			if ( !pState.stuck && pacman.reachDestination() ) {
-				
-				// When pacman reached his current destination, swap the two objects in the map collection, and update their coordinates and indexes
-				if ( pState.needsSwap ) {
-					state.map.swap( pState.index, pState.destination.index );
+		move() {
+			const pacman = state.map.getPacman();
+			const map = state.map;
+			const layout = map.getMap();
 
-					state.map.swapIndexes ( pacman, pState.destination);
+			// console.log(pacman.info());
 
-					pState.destination.x = pacman.oldX;
-					pState.destination.y = pacman.oldY;
+
+			if (!pacman.isStuck() && pacman.reachDestination()) {
+				/**
+				 * Remove pacman from the last tile's dinamic
+				 *	Update pacman's index
+				 *	Add pacman to current tile's dinamic array
+				 */
+				// remove pacman from the tile at the current index
+				layout[pacman.state.index].dinamic = layout[pacman.state.index].dinamic.filter(el => !(el.state && el.state.type === 'C'));
+				// update pacman index
+				pacman.state.index = pacman.state.destination.static.index;
+				// add pacman to the tile at the current index(now updated)
+				layout[pacman.state.index].dinamic.push(pacman);
+
+
+				/** If the user changes the direction, and it is VALID(no wall or ghost gate upfront), pacman will follow that direction */
+				const userDirectionNextTile = map.getNextTile(pacman.state.index, pacman.state.wantedUserDirection);
+				if (userDirectionNextTile.static.type !== '#' && userDirectionNextTile.static.type !== '-') {
+					pacman.state.currentDirection = pacman.state.wantedUserDirection;
 				}
-				
-
-				// If the user changes the direction, and it is VALID(no wall upfront), pacman will follow that direction
-				if ( ( pState.userDirection !== pState.validDirection ) && ( state.map.getNextTile( pacman, "user").type !== "#" && 
-				state.map.getNextTile( pacman, "user").type !== "-" ) ) {
-					pState.validDirection = pState.userDirection;
-				}
 
 				
-				// If the next tile is a wall, freeze pacman until his direction is changed 
-				if ( state.map.getNextTile( pacman ).type === "#" || state.map.getNextTile( pacman ).type === "-") {
-					
-					pState.stuck = true;
-					pState.needsSwap = false;
-					pState.reachedDestination = true;
-					
+				// If the next tile is a wall, freeze pacman until his direction is changed
+				const currentDirectionNextTile = map.getNextTile(pacman.state.index, pacman.state.currentDirection);
+				if (currentDirectionNextTile.static.type === '#' || currentDirectionNextTile.static.type === '-') {
+					pacman.state.freeze = true;
 				} else {
-					//	ELSE update the direction and destination to match the next tile in front of pacman and unfreeze him
-					
-					pState.stuck = false;
-					pState.needsSwap = true;
-					pState.reachedDestination = false;
-					pState.destination = state.map.getNextTile( pacman );
+					pacman.state.destination = currentDirectionNextTile;
 					pacman.changeDirection();
 				}
-			} else if ( !pState.stuck ){  // update pacman's position
+			} else if (!pacman.isStuck()) {
 				pacman.update();
 			}
+		},
+
+		draw() {
+			clear({ foregroundCanvas });
+			state.map.drawDinamic();
 		},
 	});
 };
 
 export default Game;
+
+				// // When pacman reached his current destination, swap the two objects in the map collection, and update their coordinates and indexes
+				// if (pacman.state.needsSwap) {
+				// 	map.swap(pacman.state.index, pacman.state.destination.index);
+
+				// 	map.swapIndexes(pacman, pacman.state.destination);
+
+				// 	pacman.state.destination.x = pacman.oldX;
+				// 	pacman.state.destination.y = pacman.oldY;
+				// }
+				// remove pacman from the last tile's dinamic array
