@@ -30,30 +30,32 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 			const layout = map.getMap();
 
 
-			// pacman turn
+			/** Update pacman's position or change his destination */
 			if (!pacman.isStuck() && pacman.reachDestination()) {
-				/**
-				 * Remove pacman from the last tile's dinamic
-				 *	Update pacman's index
-				 *	Add pacman to current tile's dinamic array
-				 */
-				// remove pacman from the tile at the current index
+				/** Move pacman in the map array to the current position */
+
+				// remove pacman from the last tile
 				layout[pacman.state.index].dinamic = layout[pacman.state.index].dinamic.filter(el => !(el.state && el.state.type === 'C'));
 				// update pacman index
 				pacman.state.index = pacman.state.destination.static.index;
-				// add pacman to the tile at the current index(now updated)
+				// add pacman to the current tile
 				layout[pacman.state.index].dinamic.push(pacman);
 
 
-				/** If the user changes the direction, and it is VALID(no wall or ghost gate upfront), pacman will follow that direction */
+				/** If the user changes the direction, and it is VALID(no impassable terrain), pacman will follow that direction */
+
 				const userDirectionNextTile = map.getNextTile(pacman.state.index, pacman.state.wantedUserDirection);
 				if (userDirectionNextTile.static.type !== '#' && userDirectionNextTile.static.type !== '-') {
 					pacman.state.currentDirection = pacman.state.wantedUserDirection;
 				}
 
-				
-				// If the next tile is a wall, freeze pacman until his direction is changed
+
+				/**
+				 * If the next tile is impassable terrain set pacman.freeze to true, so pacman is no longer able to move further
+				 * Else allow pacman to move on his current direction
+				 */
 				const currentDirectionNextTile = map.getNextTile(pacman.state.index, pacman.state.currentDirection);
+
 				if (currentDirectionNextTile.static.type === '#' || currentDirectionNextTile.static.type === '-') {
 					pacman.state.freeze = true;
 				} else {

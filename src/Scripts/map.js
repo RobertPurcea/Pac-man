@@ -99,12 +99,18 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 			element = ' ';
 		}
 
+		// for food and powerpills, calculate and append their radius to static properties
+		let radius;
+		if (element === '*') radius = state.tileWidth / 13;
+		if (element === '@') radius = state.tileWidth / 5;
+
 		return {
 			static: {
 				x,
 				y,
 				type: element,
 				index,
+				radius,
 			},
 			dinamic,
 		};

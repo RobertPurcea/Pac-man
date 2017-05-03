@@ -5,11 +5,19 @@ const round = (number, decimals) => Math.round(number * 10 ** decimals) / 10 ** 
 const random = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
 
+
+
+
+
 // transforms a simple index into a x, y index
 const indexToDoubleIndex = (array, index) => [index % array.numberOfHorizontalTiles, Math.floor(index / array.numberOfHorizontalTiles)];
 
 // transforms a double index( x, y ) into a simple index
 const doubleIndexToIndex = (array, index1, index2) => index1 + index2 * array.numberOfHorizontalTiles;
+
+
+
+
 
 
 /** determine if the distance between two points is <= than the speed of the animated element
@@ -26,6 +34,9 @@ const almostIntersect = (x1, y1, x2, y2, speed) => {
 };
 
 
+
+
+
 /** Clear the provided canvases. If one of them is not provided it will simply be ignored */
 function clear({ backgroundCanvas, foregroundCanvas }) {
 	if (backgroundCanvas !== undefined) {
@@ -36,7 +47,19 @@ function clear({ backgroundCanvas, foregroundCanvas }) {
 	}
 }
 
-export { round, random, indexToDoubleIndex, almostIntersect, doubleIndexToIndex, clear };
+/**
+ * Determines if two elements collide.
+ * Needs access to x,y and radius properties for each of the elements.
+ * @param {*} element1 
+ * @param {*} element2 
+ */
+function collide(element1, element2) {
+	const distanceBetweenCenters = Math.abs(Math.sqrt((element2.x - element1.x) ** 2 + (element2.y - element1.y) ** 2));
+	const distanceBetweenObjects = distanceBetweenCenters - element1.radius - element2.radius;
+	return distanceBetweenObjects === 0;
+}
+
+export { round, random, indexToDoubleIndex, almostIntersect, doubleIndexToIndex, clear, collide };
 
 
 

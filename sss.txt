@@ -38,8 +38,10 @@ How Pacman works
 
 
 
-next tile is food or powerup -> run collisionDetection betweem pacman and the next 
+next tile is food or powerup -> run collisionDetection between pacman and the next tile every 1/60 second
+when the collisionDetection is true, replace the static type element with ' ', stop the collisionDetection and redraw the static canvas.
 
+x,y,radius 
 
 
 
