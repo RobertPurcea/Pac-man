@@ -4,7 +4,6 @@ import {
 	collide
 } from './utility';
 
-// hcnage
 
 const Game = (backgroundCanvas, foregroundCanvas) => {
 	const state = {
@@ -75,17 +74,16 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 			// ...
 		},
 
+
+		// collision checking between pacman and every food element or ghost in the game
 		checkImpact() {
 			const pacman = state.map.getPacman();
 			const layout = state.map.getMap();
 
+			// determine if the background canvas should be redrawn
 			let redrawStatic = false;
 
-			const isFood = tile => tile.static.type === '*' ? true : false;
-			const isGhost = tile => (tile.dinamic.length !== 0 && tile.dinamic.some(tile => tile.state.type === 'M')) ? true : false;
-
-
-			layout.filter(tile => isFood(tile) || isGhost(tile)).forEach(tile => {
+			layout.forEach(tile => {
 
 				// test if pacman hits a ghost. End game if he does
 				if (tile.dinamic.length) {
@@ -101,8 +99,8 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 					if (pacmanHitGhost) console.log('pacman died');
 				}
 
-				// remove food when pacman touches it
-				if (isFood(tile) && collide(pacman.state, tile.static)) {
+				// test if pacman hits a tile with food. Remove food and set redrawStatic = true if he does
+				if (tile.static.type === '*' && collide(pacman.state, tile.static)) {
 					tile.static.type = ' ';
 					redrawStatic = true;
 				}
@@ -113,6 +111,7 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 			
 		},
 
+		
 		draw(canvas1, canvas2) {
 			if (!canvas2) {
 				clear({
@@ -133,7 +132,8 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 export default Game;
 
 
-/*
+/*			// const isFood = tile => tile.static.type === '*' ? true : false;
+			// const isGhost = tile => (tile.dinamic.length !== 0 && tile.dinamic.some(tile => tile.state.type === 'M')) ? true : false;
 
 				if (isGhost(el) && collide(pacman.state, el.dinamic[0].state)) {
 					alert("end game");
