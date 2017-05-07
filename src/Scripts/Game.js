@@ -4,6 +4,8 @@ import {
 	collide
 } from './utility';
 
+// hcnage
+
 const Game = (backgroundCanvas, foregroundCanvas) => {
 	const state = {
 		score: 0,
