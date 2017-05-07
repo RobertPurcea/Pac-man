@@ -1,25 +1,51 @@
-/** TO-DO: Make the drawing function look nicer
- *
- *
- */
-const Ghost = (canvas, x, y, index, tileWidth) => {
+import {
+	reachDestination,
+	directionControl, 
+	positionUpdate
+} from './Pacman';
+
+
+
+const Ghost = (canvas, x, y, index, tileWidth, color) => {
 	const state = {
 		x,
 		y,
 		index,
-		direction: 'up',
+
+		canvas,
 
 		speed: 3,
-		type: 'M',
-		radius: tileWidth * 0.8,
+		velX: 0,
+		velY: 0,
 
+		type: 'M',
+		color,
+		
+		radius: tileWidth * 0.8,
 		width: tileWidth * 0.8,
 		height: tileWidth * 0.85,
 
+		direction: 'left',
 		destination: null,
+		target: null,
+
+		frozen: true
 	};
 
-	return Object.assign({}, {
+	if (color = 'skyblue') {
+		state.direction = 'right';
+	}
+	if (color = 'red') {
+		state.direction = 'right';
+	}
+	if (color = 'pink') {
+		state.direction = 'left';
+	}
+	if (color = 'orange') {
+		state.direction = 'left';
+	}
+
+	return Object.assign({}, reachDestination(state), directionControl(state), positionUpdate(state), {
 		// draw after x, y, width, height
 		draw() {
 			const ctx = canvas.getContext('2d');
@@ -31,7 +57,7 @@ const Ghost = (canvas, x, y, index, tileWidth) => {
 
 			// GHOST BODY
 			ctx.beginPath();
-			ctx.fillStyle = 'red';
+			ctx.fillStyle = state.color;
 
 			ctx.moveTo(x - width / 2, y + height / 2);
 			ctx.lineTo(x - width / 2, y - height / 10);

@@ -14,13 +14,11 @@ const game = Game(backgroundCanvas, foregroundCanvas);
 game.initialize();
 
 
-
-
-
 // GAME LOOP
 
 const loop = () => {
-	game.move();
+	game.movePacman();
+	game.moveGhosts();
 
 	if (game.checkImpact()) {
 		game.draw('front', 'back');
@@ -38,7 +36,7 @@ let id = requestAnimationFrame(loop);
 
 setTimeout(() => {
 	cancelAnimationFrame(id);
-}, 10000);
+}, 20000);
 
 
 

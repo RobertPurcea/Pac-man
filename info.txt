@@ -58,3 +58,21 @@ x,y,radius
 
 
 
+Ghosts
+
+The ghost has reached it's destination ? 
+  NO: update ghost's position
+  YES: The ghost has more than one direction available ? 1
+      NO:   set new direction to the only tile available ahead
+            update ghost's animation (eyes)
+            set new destination
+      YES:  for every possible tile(except for the one behind the ghost), calculate the distance between the tile   and the current position of pacman
+            set the new destination as the tile that returns the shortest distance to pacman
+            set the new direction to point to the chosen tile
+            update ghost animation (eyes)  
+
+
+1 - the ghost has more than one tile available: 
+  run getNextTile with every direction except the opposite of the current ghost direction
+  return an array with the tile and the direction in which the tile is
+  if the result's length is 1, set the destination equal to the first element in the array

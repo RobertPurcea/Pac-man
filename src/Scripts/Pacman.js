@@ -4,7 +4,8 @@ import {
 } from './utility';
 
 
-// SHARED with ghosts
+// shared functionality
+
 /**
  * If the distance between the animated element and it's destination
  * is less than or equal to it's speed, move the animated element directly
@@ -19,7 +20,7 @@ const reachDestination = state => ({
 				state.y,
 				state.destination.static.x,
 				state.destination.static.y,
-				state.speed,
+				state.speed
 			)) {
 			state.x = state.destination.static.x;
 			state.y = state.destination.static.y;
@@ -30,12 +31,62 @@ const reachDestination = state => ({
 	},
 });
 
+// change the velocity of the element to follow the current direction
+const directionControl = state => ({
+	changeDirection() {
+		const direction = state.currentDirection || state.direction;
 
-// OWN functions
-/**
- * Based on the current direction, calculate the angles necessary for pacman's mouth
- *
- */
+		switch (direction) {
+			case 'right':
+				state.velX = state.speed;
+				state.velY = 0;
+				break;
+			case 'left':
+				state.velX = -state.speed;
+				state.velY = 0;
+				break;
+			case 'up':
+				state.velX = 0;
+				state.velY = -state.speed;
+				break;
+			case 'down':
+				state.velX = 0;
+				state.velY = state.speed;
+				break;
+			default:
+				console.log(`In pacman change direction function. Current direction: ${direction}`);
+		}
+	}
+});
+
+// update position by the current velocity
+const positionUpdate = state => ({
+	updatePosition() {
+		const canvas = state.canvas;
+
+		//	if the element gets out of the map, he is relocated in the opposite side of the map
+		if (state.x > canvas.width) {
+			state.x = 0;
+		}
+		if (state.y > canvas.height) {
+			state.y = 0;
+		}
+		if (state.x < 0) {
+			state.x = canvas.width;
+		}
+		if (state.y < 0) {
+			state.y = canvas.height;
+		}
+
+		state.x += state.velX;
+		state.y += state.velY;
+	}
+});
+
+
+// own functionality
+
+/** Calculate the angles necessary for pacman's mouth */
 function getDrawingAngles(state) {
 	/**
 	 * I do not set to 0 and 2 to prevent pacman stopping the animation in full circle shape
@@ -88,11 +139,14 @@ function getEyePosition(state) {
 }
 
 
+
 // OBJECT INTERFACE PACMAN
 const Pacman = (canvas, x, y, index, tileWidth) => {
 	const state = {
 		x,
 		y,
+
+		canvas,
 
 		index,
 		type: 'C',
@@ -113,7 +167,7 @@ const Pacman = (canvas, x, y, index, tileWidth) => {
 		freeze: false,
 	};
 
-	return Object.assign({}, reachDestination(state), {
+	return Object.assign({}, reachDestination(state), directionControl(state), positionUpdate(state), {
 		/**
 		 * Draw pacman on the canvas parameter received in the pacman constructor
 		 * The drawing is completely dependent on pacman's size and positioning and can be scaled
@@ -168,40 +222,16 @@ const Pacman = (canvas, x, y, index, tileWidth) => {
 			});
 		},
 
-		// change the speed of pacman based on the currentDirection property
-		changeDirection() {
-			switch (state.currentDirection) {
-				case 'right':
-					state.velX = state.speed;
-					state.velY = 0;
-					break;
-				case 'left':
-					state.velX = -state.speed;
-					state.velY = 0;
-					break;
-				case 'up':
-					state.velX = 0;
-					state.velY = -state.speed;
-					break;
-				case 'down':
-					state.velX = 0;
-					state.velY = state.speed;
-					break;
-				default:
-					console.log(`In pacman change direction function. Current direction: ${state.currentDirection}`);
-			}
-		},
-
 		/**
 		 * Update pacman's position and animation.
 		 * The animation progresses until pacman's mouth is opened at it's maximum then is reverses
 		 * If pacman leaves the map, he is relocated on it's opposite side
 		 */
-		update() {
+		updateAnimation() {
 			// if pacman is opening his mouth, increment animationStage, else decrement
-			state.animationStage = state.isOpening
-				? state.animationStage += 1
-				: state.animationStage -= 1;
+			state.animationStage = state.isOpening ?
+				state.animationStage += 1 :
+				state.animationStage -= 1;
 
 			// if the animation ended, set isOpening = !isOpening to reverse it
 			if (state.animationStage === state.maxAnimationStage + 1) {
@@ -210,27 +240,7 @@ const Pacman = (canvas, x, y, index, tileWidth) => {
 			if (state.animationStage === 0) {
 				state.isOpening = true;
 			}
-
-			// update position
-
-			//	if pacman gets out of the map, he is relocated in the opposite side of the map
-			if (state.x > canvas.width) {
-				state.x = 0;
-			}
-			if (state.y > canvas.height) {
-				state.y = 0;
-			}
-			if (state.x < 0) {
-				state.x = canvas.width;
-			}
-			if (state.y < 0) {
-				state.y = canvas.height;
-			}
-
-			state.x += state.velX;
-			state.y += state.velY;
 		},
-
 
 		// Utility
 		get state() {
@@ -245,4 +255,9 @@ const Pacman = (canvas, x, y, index, tileWidth) => {
 	});
 };
 
-export { Pacman, reachDestination };
+export {
+	Pacman,
+	reachDestination,
+	directionControl, 
+	positionUpdate
+};

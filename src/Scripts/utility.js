@@ -15,8 +15,21 @@ const indexToDoubleIndex = (array, index) => [index % array.numberOfHorizontalTi
 // transforms a double index( x, y ) into a simple index
 const doubleIndexToIndex = (array, index1, index2) => index1 + index2 * array.numberOfHorizontalTiles;
 
-
-
+// return the opposite direction
+const oppositeDirection = direction => {
+	switch (direction) {
+		case 'right':
+			return 'left';
+		case 'left':	
+			return 'right';
+		case 'up':
+			return 'down';
+		case 'down':
+			return 'up';
+		default:
+			throw new Error(`Wrong direction in opposite direction function: ${direction}`)
+	}
+}
 
 
 
@@ -47,6 +60,13 @@ function clear({ backgroundCanvas, foregroundCanvas }) {
 	}
 }
 
+const distance = (element1, element2) => {
+	element1.radius = element1.radius || 0;
+	element2.radius = element2.radius || 0;
+
+	return Math.abs(Math.sqrt((element2.x - element1.x) ** 2 + (element2.y - element1.y) ** 2)) - element1.radius - element2.radius
+};
+
 /**
  * Determines if two elements collide.
  * Needs access to x,y and radius properties for each of the elements.
@@ -54,12 +74,10 @@ function clear({ backgroundCanvas, foregroundCanvas }) {
  * @param {*} element2 
  */
 function collide(element1, element2) {
-	const distanceBetweenCenters = Math.abs(Math.sqrt((element2.x - element1.x) ** 2 + (element2.y - element1.y) ** 2));
-	const distanceBetweenObjects = distanceBetweenCenters - element1.radius - element2.radius;
-	return distanceBetweenObjects <= 2;
+	return distance(element1, element2) <= 0.5;
 }
 
-export { round, random, indexToDoubleIndex, almostIntersect, doubleIndexToIndex, clear, collide };
+export { round, random, indexToDoubleIndex, almostIntersect, doubleIndexToIndex, clear, collide, oppositeDirection, distance };
 
 
 

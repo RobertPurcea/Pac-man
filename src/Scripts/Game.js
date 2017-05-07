@@ -1,13 +1,16 @@
 import Map from './Map';
 import {
 	clear,
-	collide
+	collide,
+	oppositeDirection,
+	distance
 } from './utility';
 
 
 const Game = (backgroundCanvas, foregroundCanvas) => {
 	const state = {
 		score: 0,
+		directions: ['right', 'left', 'down', 'up']
 	};
 
 	return Object.assign({}, {
@@ -25,10 +28,16 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 			const pacman = state.map.getPacman();
 			pacman.setControls('w', 'd', 's', 'a');
 			pacman.state.destination = state.map.getNextTile(pacman.state.index, pacman.state.currentDirection);
+
+			// set ghosts
+			const ghosts = state.map.getGhosts();
+			ghosts.forEach(ghost => {
+				ghost.state.destination = state.map.getNextTile(ghost.state.index, ghost.state.direction);
+			});
 		},
 
 
-		move() {
+		movePacman() {
 			const pacman = state.map.getPacman();
 			const map = state.map;
 			const layout = map.getMap();
@@ -39,7 +48,7 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 				/** Move pacman in the map array to the current position */
 
 				// remove pacman from the last tile
-				layout[pacman.state.index].dinamic = layout[pacman.state.index].dinamic.filter(el => !(el.state && el.state.type === 'C'));
+				layout[pacman.state.index].dinamic = layout[pacman.state.index].dinamic.filter(el => !(el.state.type === 'C'));
 				// update pacman index
 				pacman.state.index = pacman.state.destination.static.index;
 				// add pacman to the current tile
@@ -67,11 +76,93 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 					pacman.changeDirection();
 				}
 			} else if (!pacman.isStuck()) {
-				pacman.update();
+				pacman.updatePosition();
+				pacman.updateAnimation();
 			}
 
 			// ghosts
 			// ...
+		},
+
+		moveGhosts() {
+			const map = state.map;
+			const layout = map.getMap();
+			const ghosts = map.getGhosts();
+
+			ghosts.forEach(ghost => {
+				if (ghost.reachDestination()) {
+
+					// update ghost in the main game collection(map array)
+
+					// remove from the last tile
+					layout[ghost.state.index].dinamic = layout[ghost.state.index].dinamic.filter(el => !(el.state.type === 'M'));
+
+					// update ghost index
+					ghost.state.index = ghost.state.destination.static.index;
+
+					// add ghost to the current tile
+					layout[ghost.state.index].dinamic.push(ghost);
+
+
+
+
+
+					// retrieve all the tiles that are not walls, in front of the ghost(all directions except in the back)
+
+					let possibleDirections = state.directions.filter(el => el !== oppositeDirection(ghost.state.direction));
+					let possiblePaths = [];
+
+					possibleDirections.forEach(direction => {
+						let tile = map.getNextTile(ghost.state.index, direction);
+						if (tile.static.type !== '#' && tile.static.type !== '-') {
+							possiblePaths.push({
+								tile,
+								direction
+							});
+						}
+					});
+
+
+
+
+					/** If there is only one possible way ahead continue on the current path(a ghost cannot turn in the opposite direction) */
+					if (possiblePaths.length === 1) {
+						ghost.state.destination = possiblePaths[0].tile;
+						ghost.state.direction = possiblePaths[0].direction;
+						ghost.changeDirection();
+					}
+
+
+					// !!!!!!!!! ghost.state.target is null
+					/** If the ghost is in an intersection, the path taken depends on the ghost type and wheather or not it chases pacman */
+					if (possiblePaths.length > 1) {
+						let shortestDistanceToPacman;
+						let nextPath;
+
+						possiblePaths.forEach(path => {
+							const distanceToTarget = distance(ghost.state.target, path.tile.static);
+
+							shortestDistanceToPacman = shortestDistanceToPacman || distanceToTarget;
+							nextPath = nextPath || path; 
+
+							if (distanceToTarget < shortestDistanceToPacman) {
+								shortestDistanceToPacman = distanceToTarget;
+								nextPath = path;
+							}
+						});
+
+						ghost.state.destination = nextPath.tile;
+						ghost.state.direction = nextPath.direction;
+						ghost.changeDirection();
+					}
+
+
+
+				} else {
+					ghost.updatePosition();
+				}
+			});
+
 		},
 
 
@@ -103,15 +194,16 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 				if (tile.static.type === '*' && collide(pacman.state, tile.static)) {
 					tile.static.type = ' ';
 					redrawStatic = true;
+					state.score++;
 				}
 
 			});
 
 			return redrawStatic;
-			
+
 		},
 
-		
+
 		draw(canvas1, canvas2) {
 			if (!canvas2) {
 				clear({

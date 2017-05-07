@@ -71,6 +71,9 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 	};
 
 	// Create world
+
+	const ghostColors = ['red', 'skyblue', 'pink', 'orange'];
+
 	const map = state.layout.map((element, index) => {
 		// calculate center coordinates
 		const x = state.tileWidth / 2 + state.tileWidth * (index % state.numberOfHorizontalTiles);
@@ -81,7 +84,8 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 		if (element === 'C') {
 			dinamic.push(Pacman(foregroundCanvas, x, y, index, state.tileWidth));
 		} else if (element === 'M') {
-			dinamic.push(Ghost(foregroundCanvas, x, y, index, state.tileWidth));
+			dinamic.push(Ghost(foregroundCanvas, x, y, index, state.tileWidth, ghostColors[0]));
+			ghostColors.shift();
 		}
 
 		/**
@@ -330,6 +334,25 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 			});
 
 			return pacman;
+		},
+
+		// return all the ghosts in an array
+		getGhosts() {
+			let ghosts = [];
+			let index = 0;
+
+			map.forEach(elem => {
+				if (elem.dinamic.length) {
+					elem.dinamic.forEach(dinamicElem => {
+						if (dinamicElem.state.type === 'M') {
+							ghosts[index] = dinamicElem;
+							index++;
+						}
+					});
+				}
+			});
+
+			return ghosts;
 		},
 
 		getMap() {
