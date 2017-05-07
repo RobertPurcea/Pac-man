@@ -7,15 +7,8 @@ import { Pacman } from './Pacman';
 import Ghost from './Ghost';
 import layout from './levelEditor';
 
-/** Calculate in what directions a wall can shrink
- *
- */
-function getDirectionsToEmptyTiles({
-	map,
-	index,
-	width,
-	wallShrink: size = 1,
-}) {
+/** Calculate in what directions a wall can shrink */
+function getDirectionsToEmptyTiles({ map, index, width, wallShrink: size = 1 }) {
 	let topleft = 0;
 	let topright = 0;
 	let bottomleft = 0;
@@ -234,9 +227,7 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 			});
 		},
 
-		/**
-		 * Draws every animated element in the game by using their own draw function
-		 */
+		/** Draws every animated element in the game by using their own draw function */
 		drawDinamic() {
 			map.forEach((element) => {
 				element.dinamic.forEach((elem) => {
@@ -265,7 +256,7 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 			 * The function won't execute further if the conditions below are met!!
 			 */
 			const doubleIndex = indexToDoubleIndex(state.layout, index);
-			console.log(doubleIndex);
+
 			if (
 				doubleIndex[0] === 0 ||
 				doubleIndex[0] === (width - 1) ||
@@ -278,7 +269,6 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 				if (doubleIndex[0] === 0 && direction === 'left') {
 					doubleIndex[0] = width - 1;
 					isGoingOut = true;
-					console.log(doubleIndex[1]);
 				} else if (doubleIndex[0] === (width - 1) && direction === 'right') {
 					doubleIndex[0] = 0;
 					isGoingOut = true;
@@ -298,7 +288,6 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 				 * after the values of the horizontal and vertival index from above
 				 */
 				if (isGoingOut) {
-					console.log(doubleIndex[1]);
 					return map[doubleIndexToIndex(state.layout, ...doubleIndex)];
 				}
 			}

@@ -1,5 +1,8 @@
 import Map from './Map';
-import { clear } from './utility';
+import {
+	clear,
+	collide
+} from './utility';
 
 const Game = (backgroundCanvas, foregroundCanvas) => {
 	const state = {
@@ -70,8 +73,56 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 			// ...
 		},
 
-		draw() {
-			clear({ foregroundCanvas });
+		checkImpact() {
+			const pacman = state.map.getPacman();
+			const layout = state.map.getMap();
+
+			let redrawStatic = false;
+
+			const isFood = tile => tile.static.type === '*' ? true : false;
+			const isGhost = tile => (tile.dinamic.length !== 0 && tile.dinamic.some(tile => tile.state.type === 'M')) ? true : false;
+
+
+			layout.filter(tile => isFood(tile) || isGhost(tile)).forEach(tile => {
+
+				// test if pacman hits a ghost. End game if he does
+				if (tile.dinamic.length) {
+					var pacmanHitGhost;
+
+					// test if the any of the dinamic elements from this tile hits pacman
+					tile.dinamic.forEach(elem => {
+						if (elem.state.type === 'M' && collide(pacman.state, elem.state)) {
+							return pacmanHitGhost = true;
+						}
+					});
+
+					if (pacmanHitGhost) console.log('pacman died');
+				}
+
+				// remove food when pacman touches it
+				if (isFood(tile) && collide(pacman.state, tile.static)) {
+					tile.static.type = ' ';
+					redrawStatic = true;
+				}
+
+			});
+
+			return redrawStatic;
+			
+		},
+
+		draw(canvas1, canvas2) {
+			if (!canvas2) {
+				clear({
+					foregroundCanvas
+				});
+			} else {
+				clear({
+					foregroundCanvas,
+					backgroundCanvas
+				});
+				state.map.drawStatic();
+			}
 			state.map.drawDinamic();
 		},
 	});
@@ -79,13 +130,20 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 
 export default Game;
 
-				// // When pacman reached his current destination, swap the two objects in the map collection, and update their coordinates and indexes
-				// if (pacman.state.needsSwap) {
-				// 	map.swap(pacman.state.index, pacman.state.destination.index);
 
-				// 	map.swapIndexes(pacman, pacman.state.destination);
+/*
 
-				// 	pacman.state.destination.x = pacman.oldX;
-				// 	pacman.state.destination.y = pacman.oldY;
-				// }
-				// remove pacman from the last tile's dinamic array
+				if (isGhost(el) && collide(pacman.state, el.dinamic[0].state)) {
+					alert("end game");
+				}
+ */
+// // When pacman reached his current destination, swap the two objects in the map collection, and update their coordinates and indexes
+// if (pacman.state.needsSwap) {
+// 	map.swap(pacman.state.index, pacman.state.destination.index);
+
+// 	map.swapIndexes(pacman, pacman.state.destination);
+
+// 	pacman.state.destination.x = pacman.oldX;
+// 	pacman.state.destination.y = pacman.oldY;
+// }
+// remove pacman from the last tile's dinamic array

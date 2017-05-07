@@ -1,11 +1,9 @@
 import "babel-polyfill"; 
+import Game from "./Scripts/Game.js";
 
 if (module.hot) module.hot.accept;
 console.clear();
 
-import Game from "./Scripts/Game.js";
-import {getDirectionsToEmptyTiles} from "./Scripts/utility.js";
-import Map from "./Scripts/Map.js";
 
 // SETUP 
 
@@ -19,13 +17,17 @@ game.initialize();
 
 
 
-
 // GAME LOOP
 
 const loop = () => {
 	game.move();
 
-	game.draw();
+	if (game.checkImpact()) {
+		game.draw('front', 'back');
+	} else {
+		game.draw('front');
+	}
+
 	id = requestAnimationFrame(loop);
 };
 
@@ -37,7 +39,6 @@ let id = requestAnimationFrame(loop);
 setTimeout(() => {
 	cancelAnimationFrame(id);
 }, 10000);
-
 
 
 

@@ -148,10 +148,6 @@ const Pacman = (canvas, x, y, index, tileWidth) => {
 				state.freeze = false;
 
 
-				// REMOVE
-				console.log(state);
-
-
 				// set velocity based on what key the user pressed
 				switch (e.key) {
 					case up:

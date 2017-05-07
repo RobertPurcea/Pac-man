@@ -11,6 +11,7 @@ const Ghost = (canvas, x, y, index, tileWidth) => {
 
 		speed: 3,
 		type: 'M',
+		radius: tileWidth * 0.8,
 
 		width: tileWidth * 0.8,
 		height: tileWidth * 0.85,
@@ -66,7 +67,7 @@ const Ghost = (canvas, x, y, index, tileWidth) => {
 				x - width / 2 + width / 1.75,
 				y - height / 2 + height / 2.54,
 				x - width / 2 + width / 1.75,
-				y - height / 2 + height / 2.15,
+				y - height / 2 + height / 2.15
 			);
 			ctx.bezierCurveTo(x - width / 2 + width / 1.75, y - height / 2 + height / 1.86, x - width / 2 + width / 1.64, y - height / 2 + height / 1.55, x - width / 2 + width / 1.4, y - height / 2 + height / 1.55);
 			ctx.bezierCurveTo(x - width / 2 + width / 1.21, y - height / 2 + height / 1.55, x - width / 2 + width / 1.16, y - height / 2 + height / 1.86, x - width / 2 + width / 1.16, y - height / 2 + height / 2.15);

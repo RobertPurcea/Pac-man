@@ -56,7 +56,7 @@ function clear({ backgroundCanvas, foregroundCanvas }) {
 function collide(element1, element2) {
 	const distanceBetweenCenters = Math.abs(Math.sqrt((element2.x - element1.x) ** 2 + (element2.y - element1.y) ** 2));
 	const distanceBetweenObjects = distanceBetweenCenters - element1.radius - element2.radius;
-	return distanceBetweenObjects === 0;
+	return distanceBetweenObjects <= 2;
 }
 
 export { round, random, indexToDoubleIndex, almostIntersect, doubleIndexToIndex, clear, collide };
