@@ -33,6 +33,8 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 			const ghosts = state.map.getGhosts();
 			ghosts.forEach(ghost => {
 				ghost.state.destination = state.map.getNextTile(ghost.state.index, ghost.state.direction);
+				// ghost.toggleRandomEyeMovement();
+				ghost.state.target = pacman;
 			});
 		},
 
@@ -91,11 +93,12 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 
 			ghosts.forEach(ghost => {
 				if (ghost.reachDestination()) {
-
+					
+					
 					// update ghost in the main game collection(map array)
 
 					// remove from the last tile
-					layout[ghost.state.index].dinamic = layout[ghost.state.index].dinamic.filter(el => !(el.state.type === 'M'));
+					layout[ghost.state.index].dinamic = layout[ghost.state.index].dinamic.filter(el => el.state.color !== ghost.state.color);
 
 					// update ghost index
 					ghost.state.index = ghost.state.destination.static.index;
@@ -104,6 +107,9 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 					layout[ghost.state.index].dinamic.push(ghost);
 
 
+
+			
+					
 
 
 
@@ -114,13 +120,40 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 
 					possibleDirections.forEach(direction => {
 						let tile = map.getNextTile(ghost.state.index, direction);
-						if (tile.static.type !== '#' && tile.static.type !== '-') {
+						if (tile.static.type !== '#') {
 							possiblePaths.push({
 								tile,
 								direction
 							});
 						}
 					});
+
+		
+					
+					
+
+					// override normal behaviour when a ghost is in the house
+					if (possiblePaths.length > 1 && ghost.state.inGhostHouse && possiblePaths.some(path => path.tile.static.type === '-')) {
+						const gatePath = possiblePaths.find(path => path.tile.static.type === '-');
+
+						ghost.state.destination = gatePath.tile;
+						ghost.state.direction = gatePath.direction;
+						ghost.changeDirection();
+
+						console.log("Ghost near gate"); // OUT
+
+						// prevent the ghost from entering the gate, when outside of it
+						ghost.state.inGhostHouse = false;
+						
+						return;
+					}
+					
+
+					// filter tiles for gate(normal ghost behaviour)
+					possiblePaths = possiblePaths.filter(path => path.tile.static.type !== '-');
+
+								
+
 
 
 
@@ -133,17 +166,18 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 					}
 
 
-					// !!!!!!!!! ghost.state.target is null
+
 					/** If the ghost is in an intersection, the path taken depends on the ghost type and wheather or not it chases pacman */
 					if (possiblePaths.length > 1) {
 						let shortestDistanceToPacman;
 						let nextPath;
 
 						possiblePaths.forEach(path => {
-							const distanceToTarget = distance(ghost.state.target, path.tile.static);
+							const distanceToTarget = distance( ghost.state.target.state, path.tile.static);
+
 
 							shortestDistanceToPacman = shortestDistanceToPacman || distanceToTarget;
-							nextPath = nextPath || path; 
+							nextPath = nextPath || path;
 
 							if (distanceToTarget < shortestDistanceToPacman) {
 								shortestDistanceToPacman = distanceToTarget;
@@ -155,8 +189,6 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 						ghost.state.direction = nextPath.direction;
 						ghost.changeDirection();
 					}
-
-
 
 				} else {
 					ghost.updatePosition();

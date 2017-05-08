@@ -1,9 +1,11 @@
 import {
 	reachDestination,
-	directionControl, 
-	positionUpdate
-} from './Pacman';
-
+	directionControl,
+	positionUpdate,
+ } from './Pacman';
+import {
+	random
+} from './utility';
 
 
 const Ghost = (canvas, x, y, index, tileWidth, color) => {
@@ -14,13 +16,13 @@ const Ghost = (canvas, x, y, index, tileWidth, color) => {
 
 		canvas,
 
-		speed: 3,
+		speed: random(1,3),
 		velX: 0,
 		velY: 0,
 
 		type: 'M',
 		color,
-		
+
 		radius: tileWidth * 0.8,
 		width: tileWidth * 0.8,
 		height: tileWidth * 0.85,
@@ -29,20 +31,27 @@ const Ghost = (canvas, x, y, index, tileWidth, color) => {
 		destination: null,
 		target: null,
 
-		frozen: true
+		frozen: true,
+
+		idleEyeMovement: false,
+		inGhostHouse: true,
 	};
 
-	if (color = 'skyblue') {
+	if (color === 'skyblue') {
 		state.direction = 'right';
+		state.velX = state.speed;
 	}
-	if (color = 'red') {
+	if (color === 'red') {
 		state.direction = 'right';
+		state.velX = state.speed;
 	}
-	if (color = 'pink') {
+	if (color === 'pink') {
 		state.direction = 'left';
+		state.velX = -state.speed;
 	}
-	if (color = 'orange') {
+	if (color === 'orange') {
 		state.direction = 'left';
+		state.velX = -state.speed;
 	}
 
 	return Object.assign({}, reachDestination(state), directionControl(state), positionUpdate(state), {
@@ -155,7 +164,7 @@ const Ghost = (canvas, x, y, index, tileWidth, color) => {
 						x - width / 2 + width / 1.4,
 						y - height / 2 + height / 2.7,
 						width / 14,
-						0,	Math.PI * 2,
+						0, Math.PI * 2,
 						true,
 					);
 					ctx.fill();
@@ -194,6 +203,22 @@ const Ghost = (canvas, x, y, index, tileWidth, color) => {
 					break;
 				default:
 					alert('In ghost state.direction switch statement');
+			}
+		},
+
+		// create or remove an interval that changes the direction from time to time, to create the impression of eye movement
+		toggleRandomEyeMovement() {
+			if (state.idleEyeMovement) {
+				clearInterval(state.idleEyeMovement);
+				state.idleEyeMovement = false;
+			} else {
+				const possibleDirections = ['up', 'down', 'left', 'right'];
+
+				state.idleEyeMovement = setInterval(() => {
+					state.direction = possibleDirections[random(0, 3)]; // !!! attention to default random function
+					console.log(state.direction);
+					
+				}, random(2000, 5000));
 			}
 		},
 
