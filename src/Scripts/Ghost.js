@@ -2,7 +2,7 @@ import {
 	reachDestination,
 	directionControl,
 	positionUpdate,
- } from './Pacman';
+} from './Pacman';
 import {
 	random
 } from './utility';
@@ -16,7 +16,7 @@ const Ghost = (canvas, x, y, index, tileWidth, color) => {
 
 		canvas,
 
-		speed: random(1,3),
+		speed: random(1, 3),
 		velX: 0,
 		velY: 0,
 
@@ -35,6 +35,7 @@ const Ghost = (canvas, x, y, index, tileWidth, color) => {
 
 		idleEyeMovement: false,
 		inGhostHouse: true,
+		scared: false
 	};
 
 	if (color === 'skyblue') {
@@ -66,7 +67,7 @@ const Ghost = (canvas, x, y, index, tileWidth, color) => {
 
 			// GHOST BODY
 			ctx.beginPath();
-			ctx.fillStyle = state.color;
+			ctx.fillStyle = state.scared ? 'darkblue' : state.color;
 
 			ctx.moveTo(x - width / 2, y + height / 2);
 			ctx.lineTo(x - width / 2, y - height / 10);
@@ -85,124 +86,157 @@ const Ghost = (canvas, x, y, index, tileWidth, color) => {
 			ctx.fill();
 
 
-			// Eye holes
-			ctx.beginPath();
-			ctx.fillStyle = 'white';
+			if (state.scared) {
+				// IRIS
+				ctx.fillStyle = 'white';
+				ctx.beginPath();
 
-			ctx.moveTo(x - width / 2 + width / 3.5, y - height / 2 + height / 3.5);
-			ctx.bezierCurveTo(x - width / 2 + width / 5.6, y - height / 2 + height / 3.5, x - width / 2 + width / 7, y - height / 2 + height / 2.54, x - width / 2 + width / 7, y - height / 2 + height / 2.15);
-			ctx.bezierCurveTo(x - width / 2 + width / 7, y - height / 2 + height / 1.86, x - width / 2 + width / 5.6, y - height / 2 + height / 1.55, x - width / 2 + width / 3.5, y - height / 2 + height / 1.55);
-			ctx.bezierCurveTo(x - width / 2 + width / 2.54, y - height / 2 + height / 1.55, x - width / 2 + width / 2.33, y - height / 2 + height / 1.86, x - width / 2 + width / 2.33, y - height / 2 + height / 2.15);
-			ctx.bezierCurveTo(x - width / 2 + width / 2.33, y - height / 2 + height / 2.54, x - width / 2 + width / 2.54, y - height / 2 + height / 3.5, x - width / 2 + width / 3.5, y - height / 2 + height / 3.5);
+				ctx.arc(x - width / 4, y - height / 7, width / 13, 0, Math.PI * 2);
+				ctx.arc(x + width / 4, y - height / 7, width / 13, 0, Math.PI * 2);
+				ctx.fill();
+			} else {
+				// Eye holes
+				ctx.beginPath();
+				ctx.fillStyle = 'white';
 
-			ctx.moveTo(x - width / 2 + width / 1.4, y - height / 2 + height / 3.5);
-			ctx.bezierCurveTo(
-				x - width / 2 + width / 1.64,
-				y - height / 2 + height / 3.5,
-				x - width / 2 + width / 1.75,
-				y - height / 2 + height / 2.54,
-				x - width / 2 + width / 1.75,
-				y - height / 2 + height / 2.15
-			);
-			ctx.bezierCurveTo(x - width / 2 + width / 1.75, y - height / 2 + height / 1.86, x - width / 2 + width / 1.64, y - height / 2 + height / 1.55, x - width / 2 + width / 1.4, y - height / 2 + height / 1.55);
-			ctx.bezierCurveTo(x - width / 2 + width / 1.21, y - height / 2 + height / 1.55, x - width / 2 + width / 1.16, y - height / 2 + height / 1.86, x - width / 2 + width / 1.16, y - height / 2 + height / 2.15);
-			ctx.bezierCurveTo(x - width / 2 + width / 1.16, y - height / 2 + height / 2.54, x - width / 2 + width / 1.21, y - height / 2 + height / 3.5, x - width / 2 + width / 1.40, y - height / 2 + height / 3.5);
-			ctx.fill();
+				ctx.moveTo(x - width / 2 + width / 3.5, y - height / 2 + height / 3.5);
+				ctx.bezierCurveTo(x - width / 2 + width / 5.6, y - height / 2 + height / 3.5, x - width / 2 + width / 7, y - height / 2 + height / 2.54, x - width / 2 + width / 7, y - height / 2 + height / 2.15);
+				ctx.bezierCurveTo(x - width / 2 + width / 7, y - height / 2 + height / 1.86, x - width / 2 + width / 5.6, y - height / 2 + height / 1.55, x - width / 2 + width / 3.5, y - height / 2 + height / 1.55);
+				ctx.bezierCurveTo(x - width / 2 + width / 2.54, y - height / 2 + height / 1.55, x - width / 2 + width / 2.33, y - height / 2 + height / 1.86, x - width / 2 + width / 2.33, y - height / 2 + height / 2.15);
+				ctx.bezierCurveTo(x - width / 2 + width / 2.33, y - height / 2 + height / 2.54, x - width / 2 + width / 2.54, y - height / 2 + height / 3.5, x - width / 2 + width / 3.5, y - height / 2 + height / 3.5);
+
+				ctx.moveTo(x - width / 2 + width / 1.4, y - height / 2 + height / 3.5);
+				ctx.bezierCurveTo(
+					x - width / 2 + width / 1.64,
+					y - height / 2 + height / 3.5,
+					x - width / 2 + width / 1.75,
+					y - height / 2 + height / 2.54,
+					x - width / 2 + width / 1.75,
+					y - height / 2 + height / 2.15
+				);
+				ctx.bezierCurveTo(x - width / 2 + width / 1.75, y - height / 2 + height / 1.86, x - width / 2 + width / 1.64, y - height / 2 + height / 1.55, x - width / 2 + width / 1.4, y - height / 2 + height / 1.55);
+				ctx.bezierCurveTo(x - width / 2 + width / 1.21, y - height / 2 + height / 1.55, x - width / 2 + width / 1.16, y - height / 2 + height / 1.86, x - width / 2 + width / 1.16, y - height / 2 + height / 2.15);
+				ctx.bezierCurveTo(x - width / 2 + width / 1.16, y - height / 2 + height / 2.54, x - width / 2 + width / 1.21, y - height / 2 + height / 3.5, x - width / 2 + width / 1.40, y - height / 2 + height / 3.5);
+				ctx.fill();
 
 
-			// Iris
-			ctx.fillStyle = 'blue';
+				// Iris
+				ctx.fillStyle = 'blue';
 
-			switch (state.direction) {
-				case 'left':
-					ctx.beginPath();
-					ctx.arc(
-						x - width / 2 + width / 1.55,
-						y - height / 2 + height / 2,
-						width / 14,
-						0, Math.PI * 2,
-						true,
-					);
-					ctx.fill();
+				switch (state.direction) {
+					case 'left':
+						ctx.beginPath();
+						ctx.arc(
+							x - width / 2 + width / 1.55,
+							y - height / 2 + height / 2,
+							width / 14,
+							0, Math.PI * 2,
+							true,
+						);
+						ctx.fill();
 
-					ctx.beginPath();
-					ctx.arc(
-						x - width / 2 + width / 4.66,
-						y - height / 2 + height / 2,
-						width / 14,
-						0, Math.PI * 2,
-						true,
-					);
-					ctx.fill();
-					break;
+						ctx.beginPath();
+						ctx.arc(
+							x - width / 2 + width / 4.66,
+							y - height / 2 + height / 2,
+							width / 14,
+							0, Math.PI * 2,
+							true,
+						);
+						ctx.fill();
+						break;
 
-				case 'right':
-					ctx.beginPath();
-					ctx.arc(
-						x - width / 2 + width / 1.25,
-						y - height / 2 + height / 2,
-						width / 14,
-						0, Math.PI * 2,
-						true,
-					);
-					ctx.fill();
+					case 'right':
+						ctx.beginPath();
+						ctx.arc(
+							x - width / 2 + width / 1.25,
+							y - height / 2 + height / 2,
+							width / 14,
+							0, Math.PI * 2,
+							true,
+						);
+						ctx.fill();
 
-					ctx.beginPath();
-					ctx.arc(
-						x - width / 2 + width / 2.8,
-						y - height / 2 + height / 2,
-						width / 14,
-						0, Math.PI * 2,
-						true,
-					);
-					ctx.fill();
-					break;
+						ctx.beginPath();
+						ctx.arc(
+							x - width / 2 + width / 2.8,
+							y - height / 2 + height / 2,
+							width / 14,
+							0, Math.PI * 2,
+							true,
+						);
+						ctx.fill();
+						break;
 
-				case 'up':
-					ctx.beginPath();
-					ctx.arc(
-						x - width / 2 + width / 1.4,
-						y - height / 2 + height / 2.7,
-						width / 14,
-						0, Math.PI * 2,
-						true,
-					);
-					ctx.fill();
+					case 'up':
+						ctx.beginPath();
+						ctx.arc(
+							x - width / 2 + width / 1.4,
+							y - height / 2 + height / 2.7,
+							width / 14,
+							0, Math.PI * 2,
+							true,
+						);
+						ctx.fill();
 
-					ctx.beginPath();
-					ctx.arc(
-						x - width / 2 + width / 3.3,
-						y - height / 2 + height / 2.7,
-						width / 14,
-						0, Math.PI * 2,
-						true,
-					);
-					ctx.fill();
-					break;
+						ctx.beginPath();
+						ctx.arc(
+							x - width / 2 + width / 3.3,
+							y - height / 2 + height / 2.7,
+							width / 14,
+							0, Math.PI * 2,
+							true,
+						);
+						ctx.fill();
+						break;
 
-				case 'down':
-					ctx.beginPath();
-					ctx.arc(
-						x - width / 2 + width / 1.4,
-						y - height / 2 + height / 1.8,
-						width / 14,
-						0, Math.PI * 2,
-						true,
-					);
-					ctx.fill();
+					case 'down':
+						ctx.beginPath();
+						ctx.arc(
+							x - width / 2 + width / 1.4,
+							y - height / 2 + height / 1.8,
+							width / 14,
+							0, Math.PI * 2,
+							true,
+						);
+						ctx.fill();
 
-					ctx.beginPath();
-					ctx.arc(
-						x - width / 2 + width / 3.3,
-						y - height / 2 + height / 1.8,
-						width / 14,
-						0, Math.PI * 2,
-						true,
-					);
-					ctx.fill();
-					break;
-				default:
-					alert('In ghost state.direction switch statement');
+						ctx.beginPath();
+						ctx.arc(
+							x - width / 2 + width / 3.3,
+							y - height / 2 + height / 1.8,
+							width / 14,
+							0, Math.PI * 2,
+							true,
+						);
+						ctx.fill();
+						break;
+					default:
+						alert('In ghost state.direction switch statement');
+				}
+			}
+
+
+
+
+
+			if (state.scared) {
+				// MOUTH
+				ctx.beginPath();
+				ctx.strokeStyle = "white";
+				ctx.lineWidth = 1;
+				ctx.moveTo(x + width / 3.5, y + height / 4);
+
+				ctx.lineTo(x + width / 5, y + height / 5);
+				ctx.lineTo(x + width / 9, y + height / 4);
+
+				ctx.lineTo(x, y + height / 5);
+				ctx.lineTo(x - width / 10, y + height / 4);
+
+				ctx.lineTo(x - width / 5, y + height / 5);
+				ctx.lineTo(x - width / 3.2, y + height / 4);
+
+				ctx.stroke();
 			}
 		},
 
@@ -217,7 +251,7 @@ const Ghost = (canvas, x, y, index, tileWidth, color) => {
 				state.idleEyeMovement = setInterval(() => {
 					state.direction = possibleDirections[random(0, 3)]; // !!! attention to default random function
 					console.log(state.direction);
-					
+
 				}, random(2000, 5000));
 			}
 		},
@@ -229,31 +263,3 @@ const Ghost = (canvas, x, y, index, tileWidth, color) => {
 };
 
 export default Ghost;
-
-
-// SCARED GHOST
-
-// IRIS
-// ctx.fillStyle = 'white';
-// ctx.beginPath();
-
-// ctx.arc(x - width / 4, y - height / 7, width / 13, 0, Math.PI * 2);
-// ctx.arc(x + width / 4, y - height / 7, width / 13, 0, Math.PI * 2);
-// ctx.fill();
-
-// // MOUTH
-// ctx.beginPath();
-// ctx.strokeStyle = "white";
-// ctx.lineWidth = 3;
-// ctx.moveTo(x + width / 3.5, y + height / 4);
-
-// ctx.lineTo(x + width / 5, y + height / 5);
-// ctx.lineTo(x + width / 9, y + height / 4);
-
-// ctx.lineTo(x , y + height / 5);
-// ctx.lineTo(x - width / 10, y + height / 4);
-
-// ctx.lineTo(x - width / 5, y + height / 5);
-// ctx.lineTo(x - width / 3.2, y + height / 4);
-
-// ctx.stroke();

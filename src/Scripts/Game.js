@@ -6,6 +6,39 @@ import {
 	distance
 } from './utility';
 
+/** Remove a dinamic element from it's current tile, and add it to it's destination's tile(modifying it's index too) */
+function updateInArray(element, layout, condition) {
+	// remove from the last tile
+	layout[element.state.index].dinamic = layout[element.state.index].dinamic.filter(el => condition(el));
+
+	// update element index
+	element.state.index = element.state.destination.static.index;
+
+	// add element to the current tile
+	layout[element.state.index].dinamic.push(element);
+}
+
+/** Retrieve all the possible next tiles(no walls) and the direction they are in 
+ * A tile and the direction it is in will be abstracted in a path object with a tile and direction property)
+ */
+function getPossiblePaths(element, map, state) {
+	let possiblePaths = [];
+
+	// all directions except the opposite of the current ghost direction 
+	let possibleDirections = state.directions.filter(el => el !== oppositeDirection(element.state.direction));
+
+	possibleDirections.forEach(direction => {
+		let tile = map.getNextTile(element.state.index, direction);
+		if (tile.static.type !== '#') {
+			possiblePaths.push({
+				tile,
+				direction
+			});
+		}
+	});
+
+	return possiblePaths;
+}
 
 const Game = (backgroundCanvas, foregroundCanvas) => {
 	const state = {
@@ -47,14 +80,11 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 
 			/** Update pacman's position or change his destination */
 			if (!pacman.isStuck() && pacman.reachDestination()) {
-				/** Move pacman in the map array to the current position */
 
-				// remove pacman from the last tile
-				layout[pacman.state.index].dinamic = layout[pacman.state.index].dinamic.filter(el => !(el.state.type === 'C'));
-				// update pacman index
-				pacman.state.index = pacman.state.destination.static.index;
-				// add pacman to the current tile
-				layout[pacman.state.index].dinamic.push(pacman);
+				/** Move pacman in the map array to the current position */
+				updateInArray(pacman, layout, function (el) {
+					return el.state.type !== 'C';
+				});
 
 
 				/** If the user changes the direction, and it is VALID(no impassable terrain), pacman will follow that direction */
@@ -90,69 +120,49 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 			const map = state.map;
 			const layout = map.getMap();
 			const ghosts = map.getGhosts();
+			const pacman = state.map.getPacman();
+
 
 			ghosts.forEach(ghost => {
 				if (ghost.reachDestination()) {
-					
-					
-					// update ghost in the main game collection(map array)
+					if (pacman.state.power) {
+						ghost.state.scared = true;
+					} else {
+						ghost.state.scared = false;
+					}
 
-					// remove from the last tile
-					layout[ghost.state.index].dinamic = layout[ghost.state.index].dinamic.filter(el => el.state.color !== ghost.state.color);
-
-					// update ghost index
-					ghost.state.index = ghost.state.destination.static.index;
-
-					// add ghost to the current tile
-					layout[ghost.state.index].dinamic.push(ghost);
-
-
-
-			
-					
-
-
-
-					// retrieve all the tiles that are not walls, in front of the ghost(all directions except in the back)
-
-					let possibleDirections = state.directions.filter(el => el !== oppositeDirection(ghost.state.direction));
-					let possiblePaths = [];
-
-					possibleDirections.forEach(direction => {
-						let tile = map.getNextTile(ghost.state.index, direction);
-						if (tile.static.type !== '#') {
-							possiblePaths.push({
-								tile,
-								direction
-							});
-						}
+					/** update ghost's position and index in the main game collection(map array) */
+					updateInArray(ghost, layout, function (el) {
+						return el.state.color !== ghost.state.color;
 					});
 
-		
-					
-					
 
-					// override normal behaviour when a ghost is in the house
-					if (possiblePaths.length > 1 && ghost.state.inGhostHouse && possiblePaths.some(path => path.tile.static.type === '-')) {
+					/** Get all viable next paths for the ghost */
+					let possiblePaths = getPossiblePaths(ghost, map, state);
+
+
+
+
+					/** Override normal behaviour when a ghost is in the ghost house */
+					if (ghost.state.inGhostHouse && possiblePaths.some(path => path.tile.static.type === '-')) {
 						const gatePath = possiblePaths.find(path => path.tile.static.type === '-');
 
 						ghost.state.destination = gatePath.tile;
 						ghost.state.direction = gatePath.direction;
 						ghost.changeDirection();
 
-						console.log("Ghost near gate"); // OUT
-
 						// prevent the ghost from entering the gate, when outside of it
 						ghost.state.inGhostHouse = false;
-						
+
+						// prevent normal behaviour from happening
 						return;
 					}
-					
 
-					// filter tiles for gate(normal ghost behaviour)
+
+					// prevent ghosts from passing through the gate
 					possiblePaths = possiblePaths.filter(path => path.tile.static.type !== '-');
 
-								
+
 
 
 
@@ -165,22 +175,22 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 						ghost.changeDirection();
 					}
 
-
-
-					/** If the ghost is in an intersection, the path taken depends on the ghost type and wheather or not it chases pacman */
+					/** If the ghost is in an intersection, it follows the next tile that is the closest to it's target(direct distance, not after tiles*/
 					if (possiblePaths.length > 1) {
-						let shortestDistanceToPacman;
+						let shortestDistance;
 						let nextPath;
 
 						possiblePaths.forEach(path => {
-							const distanceToTarget = distance( ghost.state.target.state, path.tile.static);
+							// if the target is not pacman, calculate distance to the static position of the target
+							ghost.state.target.state = ghost.state.target.state || ghost.state.target.static;
 
+							const distanceToTarget = distance(ghost.state.target.state, path.tile.static);
 
-							shortestDistanceToPacman = shortestDistanceToPacman || distanceToTarget;
+							shortestDistance = shortestDistance || distanceToTarget;
 							nextPath = nextPath || path;
 
-							if (distanceToTarget < shortestDistanceToPacman) {
-								shortestDistanceToPacman = distanceToTarget;
+							if (distanceToTarget < shortestDistance) {
+								shortestDistance = distanceToTarget;
 								nextPath = path;
 							}
 						});
@@ -203,7 +213,7 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 			const pacman = state.map.getPacman();
 			const layout = state.map.getMap();
 
-			// determine if the background canvas should be redrawn
+			// the background canvas should be redrawn if any food or powerup is touched by pacman
 			let redrawStatic = false;
 
 			layout.forEach(tile => {
@@ -219,14 +229,25 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 						}
 					});
 
-					if (pacmanHitGhost) console.log('pacman died');
+					if (pacmanHitGhost) console.log('pacman died');  // END GAME LOGIC
 				}
 
-				// test if pacman hits a tile with food. Remove food and set redrawStatic = true if he does
+				// Pacman eats food on touch
 				if (tile.static.type === '*' && collide(pacman.state, tile.static)) {
 					tile.static.type = ' ';
 					redrawStatic = true;
 					state.score++;
+				}
+
+				// If pacman hits a powerup, ghosts become scared for 3 seconds
+				if (tile.static.type === '@' && collide(pacman.state, tile.static)) {
+					tile.static.type = ' ';
+					redrawStatic = true;
+
+					pacman.state.power = true;
+					setTimeout(() => {
+						pacman.state.power = false;
+					}, 3000);
 				}
 
 			});
