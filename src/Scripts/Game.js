@@ -3,7 +3,8 @@ import {
 	clear,
 	collide,
 	oppositeDirection,
-	distance
+	distance,
+	count
 } from './utility';
 
 /** Remove a dinamic element from it's current tile, and add it to it's destination's tile(modifying it's index too) */
@@ -40,9 +41,28 @@ function getPossiblePaths(element, map, state) {
 	return possiblePaths;
 }
 
+/** If pacman has eaten a certain number of food tiles, release additional ghosts
+ * Set freeze to false and stop the eye movement
+*/
+function releaseGhosts(score, maxScore, ghosts) {
+	if (
+		(score >= maxScore / 8 && (count(ghosts, ghost => ghost.state.frozen) === 2)) ||
+		(score >= maxScore / 5 && (count(ghosts, ghost => ghost.state.frozen) === 1))
+	) {
+		const ghost = ghosts.find(ghost => ghost.state.frozen);
+		ghost.state.frozen = false;
+		ghost.toggleRandomEyeMovement();
+	}
+}
+
+
+
 const Game = (backgroundCanvas, foregroundCanvas) => {
 	const state = {
+		
 		score: 0,
+		maxScore: null, // calculated in the initialize function below
+
 		directions: ['right', 'left', 'down', 'up']
 	};
 
@@ -53,6 +73,9 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 			foregroundCanvas.height = backgroundCanvas.height = 650;
 
 			state.map = Map(backgroundCanvas, foregroundCanvas);
+
+			// count the number of food tiles 
+			state.maxScore = count(state.map.getMap(), tile => tile.static.type === '*');
 
 			state.map.drawStatic();
 			state.map.drawDinamic();
@@ -66,7 +89,7 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 			const ghosts = state.map.getGhosts();
 			ghosts.forEach(ghost => {
 				ghost.state.destination = state.map.getNextTile(ghost.state.index, ghost.state.direction);
-				// ghost.toggleRandomEyeMovement();
+				ghost.toggleRandomEyeMovement();
 				ghost.state.target = pacman;
 			});
 		},
@@ -124,84 +147,87 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 
 
 			ghosts.forEach(ghost => {
-				if (ghost.reachDestination()) {
-					if (pacman.state.power) {
-						ghost.state.scared = true;
-					} else {
-						ghost.state.scared = false;
-					}
+				if (!ghost.state.frozen) {
 
-					/** update ghost's position and index in the main game collection(map array) */
-					updateInArray(ghost, layout, function (el) {
-						return el.state.color !== ghost.state.color;
-					});
+					if (ghost.reachDestination()) {
+						if (pacman.state.power) {
+							ghost.state.scared = true;
+						} else {
+							ghost.state.scared = false;
+						}
 
-
-					/** Get all viable next paths for the ghost */
-					let possiblePaths = getPossiblePaths(ghost, map, state);
-
-
-
-
-					/** Override normal behaviour when a ghost is in the ghost house */
-					if (ghost.state.inGhostHouse && possiblePaths.some(path => path.tile.static.type === '-')) {
-						const gatePath = possiblePaths.find(path => path.tile.static.type === '-');
-
-						ghost.state.destination = gatePath.tile;
-						ghost.state.direction = gatePath.direction;
-						ghost.changeDirection();
-
-						// prevent the ghost from entering the gate, when outside of it
-						ghost.state.inGhostHouse = false;
-
-						// prevent normal behaviour from happening
-						return;
-					}
-
-
-					// prevent ghosts from passing through the gate
-					possiblePaths = possiblePaths.filter(path => path.tile.static.type !== '-');
-
-
-
-
-
-
-
-					/** If there is only one possible way ahead continue on the current path(a ghost cannot turn in the opposite direction) */
-					if (possiblePaths.length === 1) {
-						ghost.state.destination = possiblePaths[0].tile;
-						ghost.state.direction = possiblePaths[0].direction;
-						ghost.changeDirection();
-					}
-
-					/** If the ghost is in an intersection, it follows the next tile that is the closest to it's target(direct distance, not after tiles*/
-					if (possiblePaths.length > 1) {
-						let shortestDistance;
-						let nextPath;
-
-						possiblePaths.forEach(path => {
-							// if the target is not pacman, calculate distance to the static position of the target
-							ghost.state.target.state = ghost.state.target.state || ghost.state.target.static;
-
-							const distanceToTarget = distance(ghost.state.target.state, path.tile.static);
-
-							shortestDistance = shortestDistance || distanceToTarget;
-							nextPath = nextPath || path;
-
-							if (distanceToTarget < shortestDistance) {
-								shortestDistance = distanceToTarget;
-								nextPath = path;
-							}
+						/** update ghost's position and index in the main game collection(map array) */
+						updateInArray(ghost, layout, function (el) {
+							return el.state.color !== ghost.state.color;
 						});
 
-						ghost.state.destination = nextPath.tile;
-						ghost.state.direction = nextPath.direction;
-						ghost.changeDirection();
-					}
 
-				} else {
-					ghost.updatePosition();
+						/** Get all viable next paths for the ghost */
+						let possiblePaths = getPossiblePaths(ghost, map, state);
+
+
+
+
+						/** Override normal behaviour when a ghost is in the ghost house */
+						if (ghost.state.inGhostHouse && possiblePaths.some(path => path.tile.static.type === '-')) {
+							const gatePath = possiblePaths.find(path => path.tile.static.type === '-');
+
+							ghost.state.destination = gatePath.tile;
+							ghost.state.direction = gatePath.direction;
+							ghost.changeDirection();
+
+							// prevent the ghost from entering the gate, when outside of it
+							ghost.state.inGhostHouse = false;
+
+							// prevent normal behaviour from happening
+							return;
+						}
+
+
+						// prevent ghosts from passing through the gate
+						possiblePaths = possiblePaths.filter(path => path.tile.static.type !== '-');
+
+
+
+
+
+
+
+						/** If there is only one possible way ahead continue on the current path(a ghost cannot turn in the opposite direction) */
+						if (possiblePaths.length === 1) {
+							ghost.state.destination = possiblePaths[0].tile;
+							ghost.state.direction = possiblePaths[0].direction;
+							ghost.changeDirection();
+						}
+
+						/** If the ghost is in an intersection, it follows the next tile that is the closest to it's target(direct distance, not after tiles*/
+						if (possiblePaths.length > 1) {
+							let shortestDistance;
+							let nextPath;
+
+							possiblePaths.forEach(path => {
+								// if the target is not pacman, calculate distance to the static position of the target
+								ghost.state.target.state = ghost.state.target.state || ghost.state.target.static;
+
+								const distanceToTarget = distance(ghost.state.target.state, path.tile.static);
+
+								shortestDistance = shortestDistance || distanceToTarget;
+								nextPath = nextPath || path;
+
+								if (distanceToTarget < shortestDistance) {
+									shortestDistance = distanceToTarget;
+									nextPath = path;
+								}
+							});
+
+							ghost.state.destination = nextPath.tile;
+							ghost.state.direction = nextPath.direction;
+							ghost.changeDirection();
+						}
+
+					} else {
+						ghost.updatePosition();
+					}
 				}
 			});
 
@@ -212,8 +238,9 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 		checkImpact() {
 			const pacman = state.map.getPacman();
 			const layout = state.map.getMap();
+			const ghosts = state.map.getGhosts();
 
-			// the background canvas should be redrawn if any food or powerup is touched by pacman
+			// the background canvas(has food, powerups and walls drawn on it) should be redrawn if any food or powerup is touched by pacman
 			let redrawStatic = false;
 
 			layout.forEach(tile => {
@@ -229,14 +256,18 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 						}
 					});
 
-					if (pacmanHitGhost) console.log('pacman died');  // END GAME LOGIC
+					if (pacmanHitGhost) console.log('pacman died'); // END GAME LOGIC
 				}
 
 				// Pacman eats food on touch
 				if (tile.static.type === '*' && collide(pacman.state, tile.static)) {
 					tile.static.type = ' ';
 					redrawStatic = true;
-					state.score++;
+
+					// update the score and the tiles eaten so far (note: the score)
+					state.score += 1;
+
+					releaseGhosts(state.score, state.maxScore, ghosts);
 				}
 
 				// If pacman hits a powerup, ghosts become scared for 3 seconds

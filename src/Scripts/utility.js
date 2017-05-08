@@ -4,7 +4,8 @@ const round = (number, decimals) => Math.round(number * 10 ** decimals) / 10 ** 
 // returns a random value between min and max
 const random = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
-
+// count how many times an element appears in an array with a given condition
+const count = (array, condition) => array.reduce((acc, val) => condition(val) ? ++acc : acc, 0);
 
 
 
@@ -77,7 +78,7 @@ function collide(element1, element2) {
 	return distance(element1, element2) <= 0.5;
 }
 
-export { round, random, indexToDoubleIndex, almostIntersect, doubleIndexToIndex, clear, collide, oppositeDirection, distance };
+export { round, random, indexToDoubleIndex, almostIntersect, doubleIndexToIndex, clear, collide, oppositeDirection, distance, count };
 
 
 

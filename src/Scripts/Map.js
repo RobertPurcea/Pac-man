@@ -236,6 +236,9 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 			map.forEach((element) => {
 				element.dinamic.forEach((elem) => {
 					if (elem.state) {
+						// if (elem.state.type === 'M' && elem.state.frozen) {
+						// 	elem.draw()
+						// }
 						elem.draw();
 					}
 				});

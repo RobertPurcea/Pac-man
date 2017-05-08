@@ -37,23 +37,3 @@ let id = requestAnimationFrame(loop);
 setTimeout(() => {
 	cancelAnimationFrame(id);
 }, 20000);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

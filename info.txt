@@ -76,3 +76,19 @@ The ghost has reached it's destination ?
   run getNextTile with every direction except the opposite of the current ghost direction
   return an array with the tile and the direction in which the tile is
   if the result's length is 1, set the destination equal to the first element in the array
+
+
+
+
+
+
+
+
+Keep a track of how many food tiles pacman ate. 
+
+Release 2 ghosts the first time. 
+After half the tiles have been eaten, release the remaining ghosts
+When you release a ghost, set frozen to false and toggleEyeMovement
+
+Set the speed of the ghost to be slower before an exit(implement in ghost) - the distance does not have to be in tiles, slow down the ghost   x,y distance before the exit
+

@@ -28,36 +28,34 @@ const Ghost = (canvas, x, y, index, tileWidth, color) => {
 		height: tileWidth * 0.85,
 
 		direction: 'left',
+		drawingDirection: 'left',
 		destination: null,
 		target: null,
 
-		frozen: true,
+		frozen: false,
 
 		idleEyeMovement: false,
 		inGhostHouse: true,
 		scared: false
 	};
 
-	if (color === 'skyblue') {
+	if (color === 'skyblue' || color === 'red') {
 		state.direction = 'right';
 		state.velX = state.speed;
 	}
-	if (color === 'red') {
-		state.direction = 'right';
-		state.velX = state.speed;
-	}
-	if (color === 'pink') {
+
+	// pink and orange ghost frozen in the beginning of the game
+	if (color === 'pink' || color === 'orange') {
 		state.direction = 'left';
 		state.velX = -state.speed;
-	}
-	if (color === 'orange') {
-		state.direction = 'left';
-		state.velX = -state.speed;
+
+		state.frozen = true;
 	}
 
 	return Object.assign({}, reachDestination(state), directionControl(state), positionUpdate(state), {
 		// draw after x, y, width, height
 		draw() {
+			const direction = state.frozen ? state.drawingDirection : state.direction;
 			const ctx = canvas.getContext('2d');
 
 			const width = state.width;
@@ -123,7 +121,7 @@ const Ghost = (canvas, x, y, index, tileWidth, color) => {
 				// Iris
 				ctx.fillStyle = 'blue';
 
-				switch (state.direction) {
+				switch (direction) {
 					case 'left':
 						ctx.beginPath();
 						ctx.arc(
@@ -212,7 +210,7 @@ const Ghost = (canvas, x, y, index, tileWidth, color) => {
 						ctx.fill();
 						break;
 					default:
-						alert('In ghost state.direction switch statement');
+						alert('In ghost direction switch statement');
 				}
 			}
 
@@ -240,7 +238,7 @@ const Ghost = (canvas, x, y, index, tileWidth, color) => {
 			}
 		},
 
-		// create or remove an interval that changes the direction from time to time, to create the impression of eye movement
+		// create or remove an interval that changes the drawingDirection from time to time, to create the impression of eye movement
 		toggleRandomEyeMovement() {
 			if (state.idleEyeMovement) {
 				clearInterval(state.idleEyeMovement);
@@ -249,9 +247,7 @@ const Ghost = (canvas, x, y, index, tileWidth, color) => {
 				const possibleDirections = ['up', 'down', 'left', 'right'];
 
 				state.idleEyeMovement = setInterval(() => {
-					state.direction = possibleDirections[random(0, 3)]; // !!! attention to default random function
-					console.log(state.direction);
-
+					state.drawingDirection = possibleDirections[random(0, 3)]; // !!! attention to default random function
 				}, random(2000, 5000));
 			}
 		},
