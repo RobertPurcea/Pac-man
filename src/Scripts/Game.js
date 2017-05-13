@@ -68,8 +68,8 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 	return Object.assign({}, {
 
 		initialize() {
-			foregroundCanvas.width = backgroundCanvas.width = 690;
-			foregroundCanvas.height = backgroundCanvas.height = 650;
+			foregroundCanvas.width = backgroundCanvas.width = 700; // original: 
+			foregroundCanvas.height = backgroundCanvas.height = 651;
 
 			state.map = Map(backgroundCanvas, foregroundCanvas);
 

@@ -217,7 +217,7 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 		/** Draw walls, food, powerpills and ghost gate. Also reduce the size of walls */
 		drawStatic() {
 			const ctx = backgroundCanvas.getContext('2d');
-			const wallShrink = 4;
+			const wallShrink = 10;
 
 			map.forEach((el, index) => {
 				/** Draw walls
@@ -315,12 +315,12 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 				// Draw ghost gate
 				if (el.static.type === '-') {
 					ctx.strokeStyle = 'red';
-					ctx.lineWidth = 8;
+					ctx.lineWidth = state.tileWidth / 5;
 
 					ctx.beginPath();
 
-					ctx.moveTo(el.static.x - state.tileWidth / 2 - 3, el.static.y);
-					ctx.lineTo(el.static.x + state.tileWidth / 2 + 3, el.static.y);
+					ctx.moveTo(el.static.x - state.tileWidth, el.static.y);
+					ctx.lineTo(el.static.x + state.tileWidth, el.static.y);
 
 					ctx.stroke();
 				}

@@ -179,6 +179,15 @@ pause the previous game before making a new one
 
 
 
+
+
 TO DO
 
-SKY BLUE GHOST DISSAPEARS WHEN THE RED ONE IS EATEN
+Make a more complicated level to increase the difficulty(pacman has 3 lives)
+If pacman loses the game what happens?
+If pacman loses a round what happens?
+Add an animation to the power-ups(glowing or smth)
+When the game is paused/not started, add a user interface page positioned on top of the game.(make it a little transparent)
+Add animation the announces that a ghost is about to leave the scared state
+Make ghosts slow down and ?maybe? change their target while they are scared 
+Add sounds 
