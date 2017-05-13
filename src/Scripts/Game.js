@@ -60,7 +60,7 @@ function releaseGhosts(score, maxScore, ghosts) {
 const Game = (backgroundCanvas, foregroundCanvas) => {
 	const state = {
 		score: 0,
-		lives: 3, 
+		lives: 3,
 		loopId: null
 	};
 	const directions = ['right', 'left', 'down', 'up'];
@@ -76,13 +76,10 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 			state.map.drawStatic();
 			state.map.drawDinamic();
 
-			// so far I got an object with a bunch of functions that have access to an array that holds a reference to every object in game
-
 			// set pacman
 			const pacman = state.map.getPacman();
 			pacman.setControls('w', 'd', 's', 'a');
 			pacman.state.destination = state.map.getNextTile(pacman.state.index, pacman.state.currentDirection);
-
 
 			// set ghosts
 			const ghosts = state.map.getGhosts();
@@ -141,7 +138,6 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 			// ghosts
 			// ...
 		},
-
 		moveGhosts() {
 			const map = state.map;
 			const layout = map.getMap();
@@ -236,27 +232,38 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 
 		},
 
-
-		// collision checking between pacman and every food element or ghost in the game
+		/** Check collision between pacman and every food, powerup or ghost element in the game
+		 * pacman hits a food tile -> the food tile type becomes empty space 
+		 * pacman hits a powerup -> the powerup tile type becomes empty space
+		 * pacman hits a ghost: 
+		 * 	If pacman had an active powerup ongoing, the ghost is respawned in the ghost house
+		 * 	Else:
+		 * 		if pacman has lives left the current game is reset with the food eaten remaining so
+		 * 		else the game ends and the player is given the possibility of starting a new one  
+		 */
 		checkImpact() {
 			const pacman = state.map.getPacman();
 			const layout = state.map.getMap();
 			const ghosts = state.map.getGhosts();
 
-			// the background canvas(has food, powerups and walls drawn on it) should be redrawn if any food or powerup is touched by pacman
+			// the background canvas(has food, powerups and walls drawn on it) should be redrawn if any food or powerup is eaten by pacman
 			let redrawStatic = false;
 
+			// run collision detection between pacman and every food, powerup and ghost element in the game
 			layout.forEach(tile => {
 
-				// test if pacman hits a ghost. End game if he does
+				// if pacman hits a ghost restart the current round(pacman has lives left), end game(no lives left) or respawn the ghost
 				if (tile.dinamic.length) {
-					var pacmanHitGhost;
-
-					// test if the any of the dinamic elements from this tile hits pacman
+					// test if the any of the dinamic elements from this tile hit pacman
 					tile.dinamic.forEach(elem => {
 						if (elem.state.type === 'M' && collide(pacman.state, elem.state)) {
+							// active powerup ongoing -> respawn the ghost. pacman is unharmed
 							if (pacman.state.power) {
+								// erase the animated element
+								layout[elem.state.index].dinamic = layout[elem.state.index].dinamic.filter(elem => elem.state.type !== 'M');
 
+								// initialize another instance of the animated element in it's original position
+								state.map.initAnimatedElement(elem.state.initIndex, 'M', elem.state.color);
 							} else {
 								state.lives -= 1;
 
@@ -274,19 +281,13 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 								}
 
 							}
-							// erase the animated element
-							layout[pacman.state.index].dinamic = layout[pacman.state.index].dinamic.filter(elem => elem.state.type !== 'C');
-
-							// initialize another instance of the animated element in it's original position
-							state.map.initAnimatedElement(pacman.state.initIndex, 'C');
-
 						}
 					});
 
 
 				}
 
-				// Pacman eats food on touch
+				// increase score as pacman eats food tiles. Release ghost once pacman eats a part of the total food 
 				if (tile.static.type === '*' && collide(pacman.state, tile.static)) {
 					tile.static.type = ' ';
 					redrawStatic = true;
@@ -294,7 +295,7 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 					// update the score and the tiles eaten so far (note: the score)
 					state.score += 1;
 
-					// releaseGhosts(state.score, state.maxScore, ghosts);
+					releaseGhosts(state.score, state.map.state.foodTilesNumber, ghosts);
 				}
 
 				// If pacman hits a powerup, ghosts become scared for 3 seconds
@@ -315,7 +316,6 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 
 		},
 
-
 		draw(canvas1, canvas2) {
 			if (!canvas2) {
 				clear({
@@ -331,9 +331,9 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 			state.map.drawDinamic();
 		},
 
+		// GAME LOOP
 
-
-		setLoopId (id) {
+		setLoopId(id) {
 			state.loopId = id;
 		},
 		isPaused() {

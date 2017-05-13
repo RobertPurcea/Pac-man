@@ -40,8 +40,3 @@ const loop = () => {
 	game.setLoopId(requestAnimationFrame(loop));
 };
 
-
-
-
-
-// game.moveGhosts();

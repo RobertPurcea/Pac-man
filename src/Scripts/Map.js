@@ -90,9 +90,9 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 		// create initial map. Note: dinamic is an array
 		const dinamic = [];
 		if (element === 'C') {
-			dinamic.push(Pacman(foregroundCanvas, x, y, index, state.tileWidth));
+			dinamic.push(Pacman(foregroundCanvas, x, y, index, state.tileWidth, state.tileHeight));
 		} else if (element === 'M') {
-			dinamic.push(Ghost(foregroundCanvas, x, y, index, state.tileWidth, ghostColors[0]));
+			dinamic.push(Ghost(foregroundCanvas, x, y, index, state.tileWidth, state.tileHeight, ghostColors[0]));
 			ghostColors.shift();
 		}
 
@@ -345,18 +345,18 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 
 			// initialize ghost or pacman and push them in the map array 
 			if (type === 'C') {
-				const pacman = Pacman(foregroundCanvas, x, y, index, state.tileWidth);
+				const pacman = Pacman(foregroundCanvas, x, y, index, state.tileWidth, state.tileHeight);
 
 				map[index].dinamic.push(pacman);
 				pacman.state.destination = getNextTile(pacman.state.index, pacman.state.currentDirection);
 
 				pacman.setControls('w', 'd', 's', 'a');
 			} else if (type === 'M') {
-				const ghost = Ghost(foregroundCanvas, x, y, index, state.tileWidth, color);
+				const ghost = Ghost(foregroundCanvas, x, y, index, state.tileWidth, state.tileHeight, color);
 
 				map[index].dinamic.push(ghost);
 				ghost.state.destination = getNextTile(ghost.state.index, ghost.state.direction);
-				
+
 				ghost.state.target = getPacman();
 			} else {
 				throw new Error(`In initAnimatedElement: index -> ${index}, type -> ${type}`)

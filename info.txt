@@ -124,7 +124,14 @@ InitGhosts depends if pacman had power or not when they touched =>
 
 
 
-TO DO 
-everytime pacman is removed from the game, the old one still remains as a target for the ghosts because their target is never reassigned. update ghost's target property everytime pacman is relocated because he touched a ghost
+the round is over -> reset all animated objects
+the game is over -> replace the current game object with a newly created one 
+prevent 2 ghosts from having roughtly the same speed 
+all tiles are gone -> replace the current game object with a newly created one 
 
+
+
+TIPS 
+keep score on the game object as pacman will be reset often
+pause the previous game before making a new one
  

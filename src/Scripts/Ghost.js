@@ -8,12 +8,15 @@ import {
 } from './utility';
 
 
-const Ghost = (canvas, x, y, index, tileWidth, color) => {
+const Ghost = (canvas, x, y, index, tileWidth, tileHeight, color) => {
 	const state = {
 		x,
 		y,
 		index,
+		initIndex: index,
 
+		tileHeight,
+		tileWidth,
 		canvas,
 
 		speed: random(1, 3),
@@ -23,7 +26,7 @@ const Ghost = (canvas, x, y, index, tileWidth, color) => {
 		type: 'M',
 		color,
 
-		radius: tileWidth * 0.8,
+		radius: tileWidth * 0.3,
 		width: tileWidth * 0.8,
 		height: tileWidth * 0.85,
 
@@ -129,7 +132,7 @@ const Ghost = (canvas, x, y, index, tileWidth, color) => {
 							y - height / 2 + height / 2,
 							width / 14,
 							0, Math.PI * 2,
-							true,
+							true
 						);
 						ctx.fill();
 
@@ -139,7 +142,7 @@ const Ghost = (canvas, x, y, index, tileWidth, color) => {
 							y - height / 2 + height / 2,
 							width / 14,
 							0, Math.PI * 2,
-							true,
+							true
 						);
 						ctx.fill();
 						break;
@@ -151,7 +154,7 @@ const Ghost = (canvas, x, y, index, tileWidth, color) => {
 							y - height / 2 + height / 2,
 							width / 14,
 							0, Math.PI * 2,
-							true,
+							true
 						);
 						ctx.fill();
 
@@ -161,7 +164,7 @@ const Ghost = (canvas, x, y, index, tileWidth, color) => {
 							y - height / 2 + height / 2,
 							width / 14,
 							0, Math.PI * 2,
-							true,
+							true
 						);
 						ctx.fill();
 						break;
@@ -173,7 +176,7 @@ const Ghost = (canvas, x, y, index, tileWidth, color) => {
 							y - height / 2 + height / 2.7,
 							width / 14,
 							0, Math.PI * 2,
-							true,
+							true
 						);
 						ctx.fill();
 
@@ -183,7 +186,7 @@ const Ghost = (canvas, x, y, index, tileWidth, color) => {
 							y - height / 2 + height / 2.7,
 							width / 14,
 							0, Math.PI * 2,
-							true,
+							true
 						);
 						ctx.fill();
 						break;
@@ -195,7 +198,7 @@ const Ghost = (canvas, x, y, index, tileWidth, color) => {
 							y - height / 2 + height / 1.8,
 							width / 14,
 							0, Math.PI * 2,
-							true,
+							true
 						);
 						ctx.fill();
 
@@ -205,7 +208,7 @@ const Ghost = (canvas, x, y, index, tileWidth, color) => {
 							y - height / 2 + height / 1.8,
 							width / 14,
 							0, Math.PI * 2,
-							true,
+							true
 						);
 						ctx.fill();
 						break;

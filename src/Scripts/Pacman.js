@@ -79,8 +79,21 @@ const positionUpdate = state => ({
 			state.y = canvas.height;
 		}
 
-		state.x += state.velX;
-		state.y += state.velY;
+		// update position. If the ghosts are near the shortcuts, their speed is half of the normal one
+		if (state.type === 'M' && (
+				state.x > state.canvas.width - state.tileWidth ||
+				state.x < state.tileWidth ||
+				state.y > state.canvas.height - state.tileHeight ||
+				state.y < state.tileHeight
+			)) {
+			state.x += state.velX / 2;
+			state.y += state.velY / 2;
+		} else {
+			state.x += state.velX;
+			state.y += state.velY;
+		}
+
+
 	}
 });
 
@@ -142,12 +155,14 @@ function getEyePosition(state) {
 
 
 // OBJECT INTERFACE PACMAN
-const Pacman = (canvas, x, y, index, tileWidth) => {
+const Pacman = (canvas, x, y, index, tileWidth, tileHeight) => {
 	let state = {
 		x,
 		y,
 
 		canvas,
+		tileWidth,
+		tileHeight,
 
 		index,
 		initIndex: index,
@@ -268,6 +283,6 @@ const Pacman = (canvas, x, y, index, tileWidth) => {
 export {
 	Pacman,
 	reachDestination,
-	directionControl, 
+	directionControl,
 	positionUpdate
 };

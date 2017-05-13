@@ -62,7 +62,7 @@ const distance = (element1, element2) => {
  * @param {*} element2 
  */
 function collide(element1, element2) {
-	return distance(element1, element2) <= 0.5;
+	return distance(element1, element2) <= 0.3;
 }
 
 function clone(obj) {
