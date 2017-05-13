@@ -71,7 +71,7 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 			foregroundCanvas.width = backgroundCanvas.width = 700; // original: 
 			foregroundCanvas.height = backgroundCanvas.height = 651;
 
-			state.map = Map(backgroundCanvas, foregroundCanvas);
+			state.map = Map(backgroundCanvas, foregroundCanvas, "darkblue");
 
 			state.map.drawStatic();
 			state.map.drawDinamic();

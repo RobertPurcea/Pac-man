@@ -10,46 +10,43 @@ import Ghost from './Ghost';
 import layout from './levelEditor';
 
 /** Calculate in what directions a wall can shrink */
-function getDirectionsToEmptyTiles({
-	map,
-	index,
-	width,
-	wallShrink: size = 1
-}) {
+function getDirectionsToEmptyTiles(map, index, wallShrink, mapState) {
 	let topleft = 0;
 	let topright = 0;
 	let bottomleft = 0;
 	let bottomright = 0;
-	let right = 0;
-	let left = 0;
-	let top = 0;
-	let bottom = 0;
+
+	const width = mapState.numberOfHorizontalTiles;
+	const height = mapState.numberOfVerticalTiles;
 
 
-	right = (map[index + 1] !== undefined) && (map[index + 1].static.type !== '#') ? size : 0;
-	left = (map[index - 1] !== undefined) && (map[index - 1].static.type !== '#') ? size : 0;
-	top = (map[index - width] !== undefined) && (map[index - width].static.type !== '#') ? size : 0;
-	bottom = (map[index + width] !== undefined) && (map[index + width].static.type !== '#') ? size : 0;
+	// reduce sides 
 
+	let right = (((index + 1) % width !== 0) && (map[index + 1].static.type !== '#')) ? wallShrink : 0;
+	let left = ((index % width !== 0) && (map[index - 1].static.type !== '#')) ? wallShrink : 0;
+	let top = ((map[index - width] !== undefined) && (map[index - width].static.type !== '#')) ? wallShrink : 0;
+	let bottom = ((map[index + width] !== undefined) && (map[index + width].static.type !== '#')) ? wallShrink : 0;
+
+	// reduce corners
 
 	if (map[index - width - 1]) {
-		if ((map[index - width - 1].static.type !== '#') && (!top && !left)) {
-			topleft = size;
+		if (index % width !== 0 && (map[index - width - 1].static.type !== '#') && (!top && !left)) {
+			topleft = wallShrink;
 		}
 	}
 	if (map[index - width + 1]) {
 		if (map[index - width + 1].static.type !== '#' && (!top && !right)) {
-			topright = size;
+			topright = wallShrink;
 		}
 	}
 	if (map[index + width - 1]) {
 		if (map[index + width - 1].static.type !== '#' && (!bottom && !left)) {
-			bottomleft = size;
+			bottomleft = wallShrink;
 		}
 	}
 	if (map[index + width + 1]) {
-		if (map[index + width + 1].static.type !== '#' && (!bottom && !right)) {
-			bottomright = size;
+		if ((index + width + 1) % width !== 0 && map[index + width + 1].static.type !== '#' && (!bottom && !right)) {
+			bottomright = wallShrink;
 		}
 	}
 
@@ -66,7 +63,7 @@ function getDirectionsToEmptyTiles({
 	};
 }
 
-const Map = (backgroundCanvas, foregroundCanvas) => {
+const Map = (backgroundCanvas, foregroundCanvas, wallColor) => {
 	const state = {
 		numberOfHorizontalTiles: layout.numberOfHorizontalTiles,
 		numberOfVerticalTiles: layout.numberOfVerticalTiles,
@@ -75,8 +72,12 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 		tileHeight: backgroundCanvas.height / layout.numberOfVerticalTiles,
 
 		layout,
-		foodTilesNumber: 0
+		foodTilesNumber: 0,
+
+		wallColor,
 	};
+
+	state.wallColor = wallColor || "cyan";
 
 	// viable ghost colors. DON'T CHANGE
 	const ghostColors = ['red', 'skyblue', 'pink', 'orange'];
@@ -123,6 +124,7 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 			dinamic,
 		};
 	});
+
 
 	/** Get the next tile located on a chosen direction beginning from the current index */
 	function getNextTile(index, direction) {
@@ -217,7 +219,9 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 		/** Draw walls, food, powerpills and ghost gate. Also reduce the size of walls */
 		drawStatic() {
 			const ctx = backgroundCanvas.getContext('2d');
-			const wallShrink = 10;
+
+			// how much to reduce the wall size
+			const wallShrink = 7;
 
 			map.forEach((el, index) => {
 				/** Draw walls
@@ -225,8 +229,9 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 				 * smaller I had to reduce only the parts where a part of wall does not face another wall.
 				 */
 				if (el.static.type === '#') {
-					ctx.fillStyle = 'darkblue';
+					ctx.fillStyle = state.wallColor;
 
+					// calculate by how much each side a wall tile must reduce 
 					const {
 						top,
 						right,
@@ -236,13 +241,10 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 						topright,
 						bottomleft,
 						bottomright,
-					} = getDirectionsToEmptyTiles({
-						map,
-						index,
-						width: state.numberOfHorizontalTiles,
-						wallShrink,
-					});
+					} = getDirectionsToEmptyTiles(map, index, wallShrink, state);
 
+
+					// draw the wall tile reduced WITHOUT corners reduced as well
 					ctx.fillRect(
 						el.static.x - state.tileWidth / 2 + left,
 						el.static.y - state.tileHeight / 2 + top,
@@ -250,6 +252,8 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 						state.tileHeight - top - bottom,
 					);
 
+
+					// reduce the size of the corners
 					if (topleft) {
 						ctx.clearRect(
 							el.static.x - state.tileWidth / 2,
@@ -319,8 +323,8 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 
 					ctx.beginPath();
 
-					ctx.moveTo(el.static.x - state.tileWidth, el.static.y);
-					ctx.lineTo(el.static.x + state.tileWidth, el.static.y);
+					ctx.moveTo(el.static.x - state.tileWidth / 2, el.static.y);
+					ctx.lineTo(el.static.x + state.tileWidth / 2, el.static.y);
 
 					ctx.stroke();
 				}
