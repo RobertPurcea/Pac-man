@@ -1,4 +1,4 @@
-import "babel-polyfill"; 
+import "babel-polyfill";
 import Game from "./Scripts/Game.js";
 
 if (module.hot) module.hot.accept;
@@ -13,12 +13,25 @@ const foregroundCanvas = document.querySelector("#foreground");
 const game = Game(backgroundCanvas, foregroundCanvas);
 game.initialize();
 
+let gameLoopId;
+
+/** Start or pause the game on spacebar keypress */
+document.addEventListener('keydown', e => {
+	if (e.key === ' ') {
+		if (!gameLoopId) {
+			gameLoopId = requestAnimationFrame(loop);
+		} else {
+			cancelAnimationFrame(gameLoopId);
+			gameLoopId = false;
+		}
+	}
+});
+
 
 // GAME LOOP
 
 const loop = () => {
 	game.movePacman();
-	game.moveGhosts();
 
 	if (game.checkImpact()) {
 		game.draw('front', 'back');
@@ -26,14 +39,11 @@ const loop = () => {
 		game.draw('front');
 	}
 
-	id = requestAnimationFrame(loop);
+	gameLoopId = requestAnimationFrame(loop);
 };
 
-let id = requestAnimationFrame(loop);
 
 
-// cancel loop after seconds
 
-setTimeout(() => {
-	cancelAnimationFrame(id);
-}, 20000);
+
+// game.moveGhosts();

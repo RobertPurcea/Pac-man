@@ -92,3 +92,30 @@ When you release a ghost, set frozen to false and toggleEyeMovement
 
 Set the speed of the ghost to be slower before an exit(implement in ghost) - the distance does not have to be in tiles, slow down the ghost   x,y distance before the exit
 
+
+
+
+
+
+
+
+
+
+
+
+I have an array:  Map that has on each index an object with 2 props: Static and Dinamic. Dinamic holds a reference for every animated element
+
+The target for ghosts is always pacman. You can init them in map, and run this same function after they respawn because the target is always going to be pacman.
+The destination of the ghosts can also be initialized no matter when they respawn
+
+Everytime something is reset, delete that and create a new instance of it at a chosen index. 
+
+InitPacman => 
+	 delete the last event listener 
+	 add new event listener
+	 set destination
+	 the rest is like in the init state 
+	
+InitGhosts depends if pacman had power or not when they touched =>
+	HAD POWER =>
+		set destination 

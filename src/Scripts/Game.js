@@ -22,11 +22,11 @@ function updateInArray(element, layout, condition) {
 /** Retrieve all the possible next tiles(no walls) and the direction they are in 
  * A tile and the direction it is in will be abstracted in a path object with a tile and direction property)
  */
-function getPossiblePaths(element, map, state) {
+function getPossiblePaths(element, map, directions) {
 	let possiblePaths = [];
 
 	// all directions except the opposite of the current ghost direction 
-	let possibleDirections = state.directions.filter(el => el !== oppositeDirection(element.state.direction));
+	let possibleDirections = directions.filter(el => el !== oppositeDirection(element.state.direction));
 
 	possibleDirections.forEach(direction => {
 		let tile = map.getNextTile(element.state.index, direction);
@@ -43,7 +43,7 @@ function getPossiblePaths(element, map, state) {
 
 /** If pacman has eaten a certain number of food tiles, release additional ghosts
  * Set freeze to false and stop the eye movement
-*/
+ */
 function releaseGhosts(score, maxScore, ghosts) {
 	if (
 		(score >= maxScore / 8 && (count(ghosts, ghost => ghost.state.frozen) === 2)) ||
@@ -59,12 +59,9 @@ function releaseGhosts(score, maxScore, ghosts) {
 
 const Game = (backgroundCanvas, foregroundCanvas) => {
 	const state = {
-		
 		score: 0,
-		maxScore: null, // calculated in the initialize function below
-
-		directions: ['right', 'left', 'down', 'up']
 	};
+	const directions = ['right', 'left', 'down', 'up'];
 
 	return Object.assign({}, {
 
@@ -74,24 +71,25 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 
 			state.map = Map(backgroundCanvas, foregroundCanvas);
 
-			// count the number of food tiles 
-			state.maxScore = count(state.map.getMap(), tile => tile.static.type === '*');
-
 			state.map.drawStatic();
 			state.map.drawDinamic();
+
+			// so far I got an object with a bunch of functions that have access to an array that holds a reference to every object in game
 
 			// set pacman
 			const pacman = state.map.getPacman();
 			pacman.setControls('w', 'd', 's', 'a');
 			pacman.state.destination = state.map.getNextTile(pacman.state.index, pacman.state.currentDirection);
 
+
+
 			// set ghosts
-			const ghosts = state.map.getGhosts();
-			ghosts.forEach(ghost => {
-				ghost.state.destination = state.map.getNextTile(ghost.state.index, ghost.state.direction);
-				ghost.toggleRandomEyeMovement();
-				ghost.state.target = pacman;
-			});
+			// const ghosts = state.map.getGhosts();
+			// ghosts.forEach(ghost => {
+			// 	ghost.state.destination = state.map.getNextTile(ghost.state.index, ghost.state.direction);
+			// 	ghost.toggleRandomEyeMovement();
+			// 	ghost.state.target = pacman;
+			// });
 		},
 
 
@@ -99,6 +97,10 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 			const pacman = state.map.getPacman();
 			const map = state.map;
 			const layout = map.getMap();
+
+			// console.log(!pacman.isStuck());
+			// console.log(pacman.state);
+
 
 
 			/** Update pacman's position or change his destination */
@@ -163,7 +165,7 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 
 
 						/** Get all viable next paths for the ghost */
-						let possiblePaths = getPossiblePaths(ghost, map, state);
+						let possiblePaths = getPossiblePaths(ghost, map, directions);
 
 
 
@@ -256,7 +258,9 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 						}
 					});
 
-					if (pacmanHitGhost) console.log('pacman died'); // END GAME LOGIC
+					if (pacmanHitGhost) {
+						// console.log('pacman died');
+					}
 				}
 
 				// Pacman eats food on touch
@@ -267,7 +271,7 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 					// update the score and the tiles eaten so far (note: the score)
 					state.score += 1;
 
-					releaseGhosts(state.score, state.maxScore, ghosts);
+					// releaseGhosts(state.score, state.maxScore, ghosts);
 				}
 
 				// If pacman hits a powerup, ghosts become scared for 3 seconds
@@ -279,6 +283,18 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 					setTimeout(() => {
 						pacman.state.power = false;
 					}, 3000);
+
+					/// // /  / / / / / / / / / / / /
+					// erase the animated element
+					layout[pacman.state.index].dinamic = layout[pacman.state.index].dinamic.filter(elem => elem.state.type !== 'C');
+
+					// initialize another instance of the animated element in it's original position
+					state.map.initPacman(pacman.state.initIndex);
+
+
+
+
+
 				}
 
 			});

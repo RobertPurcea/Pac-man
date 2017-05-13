@@ -32,24 +32,11 @@ const oppositeDirection = direction => {
 	}
 }
 
-
-
-/** determine if the distance between two points is <= than the speed of the animated element
- * 
- * @param {*} x1
- * @param {*} y1 
- * @param {*} x2 
- * @param {*} y2 
- * @param {*} speed 
- */
+/** determine if the distance between two points is <= than the speed of the animated element */
 const almostIntersect = (x1, y1, x2, y2, speed) => {
 	const distance = Math.abs(Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2));
 	return distance <= speed;
 };
-
-
-
-
 
 /** Clear the provided canvases. If one of them is not provided it will simply be ignored */
 function clear({ backgroundCanvas, foregroundCanvas }) {
@@ -78,7 +65,27 @@ function collide(element1, element2) {
 	return distance(element1, element2) <= 0.5;
 }
 
-export { round, random, indexToDoubleIndex, almostIntersect, doubleIndexToIndex, clear, collide, oppositeDirection, distance, count };
+function clone(obj) {
+   let container = {};
+   for (let key in obj) {
+      container[key] = obj[key];
+   }
+   return container;
+}
+
+export {
+	round,
+	random,
+	indexToDoubleIndex,
+	doubleIndexToIndex,
+	almostIntersect,
+	clear,
+	collide,
+	oppositeDirection,
+	distance,
+	count,
+	clone
+};
 
 
 

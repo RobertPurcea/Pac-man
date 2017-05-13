@@ -3,12 +3,19 @@ import {
 	doubleIndexToIndex,
 } from './utility';
 
-import { Pacman } from './Pacman';
+import {
+	Pacman
+} from './Pacman';
 import Ghost from './Ghost';
 import layout from './levelEditor';
 
 /** Calculate in what directions a wall can shrink */
-function getDirectionsToEmptyTiles({ map, index, width, wallShrink: size = 1 }) {
+function getDirectionsToEmptyTiles({
+	map,
+	index,
+	width,
+	wallShrink: size = 1
+}) {
 	let topleft = 0;
 	let topright = 0;
 	let bottomleft = 0;
@@ -68,6 +75,7 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 		tileHeight: backgroundCanvas.height / layout.numberOfVerticalTiles,
 
 		layout,
+		foodTilesNumber: 0
 	};
 
 	// Create world
@@ -98,8 +106,11 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 
 		// for food and powerpills, calculate and append their radius to static properties
 		let radius;
-		if (element === '*') radius = state.tileWidth / 13;
-		if (element === '@') radius = state.tileWidth / 5;
+		if (element === '*') {
+			radius = Math.floor(state.tileWidth / 13);
+			state.foodTilesNumber += 1;
+		}
+		if (element === '@') radius = Math.floor(state.tileWidth / 5);
 
 		return {
 			static: {
@@ -113,12 +124,87 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 		};
 	});
 
+	/** Get the next tile located on a chosen direction beginning from the current index */
+	function getNextTile(index, direction) {
+		const width = state.numberOfHorizontalTiles;
+		const height = state.numberOfVerticalTiles;
+		let nextTile;
+
+
+
+		/**
+		 * If the next tile is leading outside of the map array, RETURN it's position
+		 * in the array on the beggining of it's opposite side.
+		 *
+		 * The function won't execute further if the conditions below are met!!
+		 */
+		const doubleIndex = indexToDoubleIndex(state.layout, index);
+
+		if (
+			doubleIndex[0] === 0 ||
+			doubleIndex[0] === (width - 1) ||
+			doubleIndex[1] === 0 ||
+			doubleIndex[1] === (height - 1)
+		) {
+			let isGoingOut = false;
+
+			// calculate the x index if the element leaves the maze horizontally
+			if (doubleIndex[0] === 0 && direction === 'left') {
+				doubleIndex[0] = width - 1;
+				isGoingOut = true;
+			} else if (doubleIndex[0] === (width - 1) && direction === 'right') {
+				doubleIndex[0] = 0;
+				isGoingOut = true;
+			}
+
+			// calculate the y index if the element leaves the maze vertically
+			if (doubleIndex[1] === 0 && direction === 'up') {
+				doubleIndex[1] = height - 1;
+				isGoingOut = true;
+			} else if (doubleIndex[1] === (height - 1) && direction === 'down') {
+				doubleIndex[1] = 0;
+				isGoingOut = true;
+			}
+
+			/**
+			 * If the element is going to leave the maze, return the index calculated
+			 * after the values of the horizontal and vertival index from above
+			 */
+			if (isGoingOut) {
+				return map[doubleIndexToIndex(state.layout, ...doubleIndex)];
+			}
+		}
+
+
+		/**
+		 * Simply return the next tile, the animated element is facing.
+		 * Note: If this is running, the next tile was not located outside of the map
+		 */
+		switch (direction) {
+			case 'right':
+				nextTile = map[index + 1];
+				break;
+			case 'left':
+				nextTile = map[index - 1];
+				break;
+			case 'up':
+				nextTile = map[index - state.numberOfHorizontalTiles];
+				break;
+			case 'down':
+				nextTile = map[index + state.numberOfHorizontalTiles];
+				break;
+			default:
+				alert(`${direction}  getNextTile() !!!!!!!!!!!`);
+		}
+
+		return nextTile;
+	}
+
 
 	return Object.assign({}, {
-		/**
-		 * Draw walls, food, powerpills and ghost gate. Also reduce the size of walls
-		 *
-		 */
+		getNextTile,
+
+		/** Draw walls, food, powerpills and ghost gate. Also reduce the size of walls */
 		drawStatic() {
 			const ctx = backgroundCanvas.getContext('2d');
 			const wallShrink = 4;
@@ -236,92 +322,22 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 			map.forEach((element) => {
 				element.dinamic.forEach((elem) => {
 					if (elem.state) {
-						// if (elem.state.type === 'M' && elem.state.frozen) {
-						// 	elem.draw()
-						// }
 						elem.draw();
 					}
 				});
 			});
 		},
 
-		/**
-		 *	Get the next tile located on a chosen direction beginning from the current index
-		 * @param {*} index - index location of the element
-		 * @param {*} direction - direction to the desired tile
-		 */
-		getNextTile(index, direction) {
-			const width = state.numberOfHorizontalTiles;
-			const height = state.numberOfVerticalTiles;
-			let nextTile;
+		initPacman(index) {
+			// calculate center coordinates
+			const x = state.tileWidth / 2 + state.tileWidth * (index % state.numberOfHorizontalTiles);
+			const y = state.tileHeight / 2 + state.tileHeight * Math.floor(index / state.numberOfHorizontalTiles);
 
+			const pacman = Pacman(foregroundCanvas, x, y, index, state.tileWidth);
+			map[index].dinamic.push(pacman);
 
-			/**
-			 * If the next tile is leading outside of the map array, RETURN it's position
-			 * in the array on the beggining of it's opposite side.
-			 *
-			 * The function won't execute further if the conditions below are met!!
-			 */
-			const doubleIndex = indexToDoubleIndex(state.layout, index);
-
-			if (
-				doubleIndex[0] === 0 ||
-				doubleIndex[0] === (width - 1) ||
-				doubleIndex[1] === 0 ||
-				doubleIndex[1] === (height - 1)
-			) {
-				let isGoingOut = false;
-
-				// calculate the x index if the element leaves the maze horizontally
-				if (doubleIndex[0] === 0 && direction === 'left') {
-					doubleIndex[0] = width - 1;
-					isGoingOut = true;
-				} else if (doubleIndex[0] === (width - 1) && direction === 'right') {
-					doubleIndex[0] = 0;
-					isGoingOut = true;
-				}
-
-				// calculate the y index if the element leaves the maze vertically
-				if (doubleIndex[1] === 0 && direction === 'up') {
-					doubleIndex[1] = height - 1;
-					isGoingOut = true;
-				} else if (doubleIndex[1] === (height - 1) && direction === 'down') {
-					doubleIndex[1] = 0;
-					isGoingOut = true;
-				}
-
-				/**
-				 * If the element is going to leave the maze, return the index calculated
-				 * after the values of the horizontal and vertival index from above
-				 */
-				if (isGoingOut) {
-					return map[doubleIndexToIndex(state.layout, ...doubleIndex)];
-				}
-			}
-
-
-			/**
-			 * Simply return the next tile, the animated element is facing.
-			 * Note: If this is running, the next tile was not located outside of the map
-			 */
-			switch (direction) {
-				case 'right':
-					nextTile = map[index + 1];
-					break;
-				case 'left':
-					nextTile = map[index - 1];
-					break;
-				case 'up':
-					nextTile = map[index - state.numberOfHorizontalTiles];
-					break;
-				case 'down':
-					nextTile = map[index + state.numberOfHorizontalTiles];
-					break;
-				default:
-					alert(`${direction}  getNextTile() !!!!!!!!!!!`);
-			}
-
-			return nextTile;
+			pacman.setControls('w', 'd', 's', 'a');
+			pacman.state.destination = getNextTile(pacman.state.index, pacman.state.currentDirection);
 		},
 
 
@@ -362,32 +378,48 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 			return map;
 		},
 
+		get state() {
+			return state;
+		}
+
 	});
 };
 
 
 export default Map;
 
-		// get size() {
-		// 	return [state.numberOfHorizontalTiles, state.numberOfVerticalTiles];
-		// },
-		// get pacman() {
-		// 	return map[pacmanIndex];
-		// },
-		// get platform() {
-		// 	return map;
-		// },
-		// swapIndexes(object1, object2) {
-		// 	const temp = object1.state.index;
-		// 	object1.state.index = object2.index;
-		// 	object2.index = temp;
-		// },
-		// swap two objects
-		// swap(index1, index2) {
-		// 	const temp = map[index1];
-		// 	map[index1] = map[index2];
-		// 	map[index2] = temp;
-		// },
+
+
+
+
+
+
+
+
+
+
+
+
+// get size() {
+// 	return [state.numberOfHorizontalTiles, state.numberOfVerticalTiles];
+// },
+// get pacman() {
+// 	return map[pacmanIndex];
+// },
+// get platform() {
+// 	return map;
+// },
+// swapIndexes(object1, object2) {
+// 	const temp = object1.state.index;
+// 	object1.state.index = object2.index;
+// 	object2.index = temp;
+// },
+// swap two objects
+// swap(index1, index2) {
+// 	const temp = map[index1];
+// 	map[index1] = map[index2];
+// 	map[index2] = temp;
+// },
 
 /*
 		getNextTile(element, option) {

@@ -1,6 +1,7 @@
 import {
 	round,
 	almostIntersect,
+	clone
 } from './utility';
 
 
@@ -142,13 +143,14 @@ function getEyePosition(state) {
 
 // OBJECT INTERFACE PACMAN
 const Pacman = (canvas, x, y, index, tileWidth) => {
-	const state = {
+	let state = {
 		x,
 		y,
 
 		canvas,
 
 		index,
+		initIndex: index,
 		type: 'C',
 
 		velX: 3,
@@ -199,7 +201,9 @@ const Pacman = (canvas, x, y, index, tileWidth) => {
 				if (lastEvent && lastEvent.key === e.key) return;
 				lastEvent = e;
 
-				state.freeze = false;
+				if ([up, right, left, down].indexOf(e.key) !== -1) {
+					state.freeze = false;
+				}
 
 
 				// set velocity based on what key the user pressed
@@ -249,9 +253,15 @@ const Pacman = (canvas, x, y, index, tileWidth) => {
 		isStuck() {
 			return state.freeze === true;
 		},
-		info() {
-			return state;
+
+
+		reset() {
+			state = {};
 		},
+		getInitialState() {
+			return clone(initialState);
+		}
+
 	});
 };
 
