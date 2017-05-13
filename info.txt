@@ -119,3 +119,12 @@ InitPacman =>
 InitGhosts depends if pacman had power or not when they touched =>
 	HAD POWER =>
 		set destination 
+
+
+
+
+
+TO DO 
+everytime pacman is removed from the game, the old one still remains as a target for the ghosts because their target is never reassigned. update ghost's target property everytime pacman is relocated because he touched a ghost
+
+ 

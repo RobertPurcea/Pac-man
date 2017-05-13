@@ -13,16 +13,13 @@ const foregroundCanvas = document.querySelector("#foreground");
 const game = Game(backgroundCanvas, foregroundCanvas);
 game.initialize();
 
-let gameLoopId;
-
 /** Start or pause the game on spacebar keypress */
 document.addEventListener('keydown', e => {
 	if (e.key === ' ') {
-		if (!gameLoopId) {
-			gameLoopId = requestAnimationFrame(loop);
+		if (game.isPaused()) {
+			game.play(loop);
 		} else {
-			cancelAnimationFrame(gameLoopId);
-			gameLoopId = false;
+			game.pause();
 		}
 	}
 });
@@ -32,6 +29,7 @@ document.addEventListener('keydown', e => {
 
 const loop = () => {
 	game.movePacman();
+	game.moveGhosts();
 
 	if (game.checkImpact()) {
 		game.draw('front', 'back');
@@ -39,7 +37,7 @@ const loop = () => {
 		game.draw('front');
 	}
 
-	gameLoopId = requestAnimationFrame(loop);
+	game.setLoopId(requestAnimationFrame(loop));
 };
 
 

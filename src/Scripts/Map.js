@@ -200,6 +200,16 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 		return nextTile;
 	}
 
+	function getPacman() {
+		let pacman;
+
+		map.some((element) => {
+			pacman = element.dinamic.find(elem => elem.state && elem.state.type === 'C');
+			return pacman;
+		});
+
+		return pacman;
+	}
 
 	return Object.assign({}, {
 		getNextTile,
@@ -328,32 +338,36 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 			});
 		},
 
-		initPacman(index) {
-			// calculate center coordinates
+		initAnimatedElement(index, type, color) {
+			/** Calculate coordinates based on the index */
 			const x = state.tileWidth / 2 + state.tileWidth * (index % state.numberOfHorizontalTiles);
 			const y = state.tileHeight / 2 + state.tileHeight * Math.floor(index / state.numberOfHorizontalTiles);
 
-			const pacman = Pacman(foregroundCanvas, x, y, index, state.tileWidth);
-			map[index].dinamic.push(pacman);
+			// initialize ghost or pacman and push them in the map array 
+			if (type === 'C') {
+				const pacman = Pacman(foregroundCanvas, x, y, index, state.tileWidth);
 
-			pacman.setControls('w', 'd', 's', 'a');
-			pacman.state.destination = getNextTile(pacman.state.index, pacman.state.currentDirection);
+				map[index].dinamic.push(pacman);
+				pacman.state.destination = getNextTile(pacman.state.index, pacman.state.currentDirection);
+
+				pacman.setControls('w', 'd', 's', 'a');
+			} else if (type === 'M') {
+				const ghost = Ghost(foregroundCanvas, x, y, index, state.tileWidth, color);
+
+				map[index].dinamic.push(ghost);
+				ghost.state.destination = getNextTile(ghost.state.index, ghost.state.direction);
+				
+				ghost.state.target = getPacman();
+			} else {
+				throw new Error(`In initAnimatedElement: index -> ${index}, type -> ${type}`)
+			}
 		},
 
 
 		// Helpers
 
 		// Return pacman from the map array
-		getPacman() {
-			let pacman;
-
-			map.some((element) => {
-				pacman = element.dinamic.find(elem => elem.state && elem.state.type === 'C');
-				return pacman;
-			});
-
-			return pacman;
-		},
+		getPacman,
 
 		// return all the ghosts in an array
 		getGhosts() {

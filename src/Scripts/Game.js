@@ -60,6 +60,8 @@ function releaseGhosts(score, maxScore, ghosts) {
 const Game = (backgroundCanvas, foregroundCanvas) => {
 	const state = {
 		score: 0,
+		lives: 3, 
+		loopId: null
 	};
 	const directions = ['right', 'left', 'down', 'up'];
 
@@ -82,14 +84,13 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 			pacman.state.destination = state.map.getNextTile(pacman.state.index, pacman.state.currentDirection);
 
 
-
 			// set ghosts
-			// const ghosts = state.map.getGhosts();
-			// ghosts.forEach(ghost => {
-			// 	ghost.state.destination = state.map.getNextTile(ghost.state.index, ghost.state.direction);
-			// 	ghost.toggleRandomEyeMovement();
-			// 	ghost.state.target = pacman;
-			// });
+			const ghosts = state.map.getGhosts();
+			ghosts.forEach(ghost => {
+				ghost.state.destination = state.map.getNextTile(ghost.state.index, ghost.state.direction);
+				ghost.toggleRandomEyeMovement();
+				ghost.state.target = pacman;
+			});
 		},
 
 
@@ -254,13 +255,35 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 					// test if the any of the dinamic elements from this tile hits pacman
 					tile.dinamic.forEach(elem => {
 						if (elem.state.type === 'M' && collide(pacman.state, elem.state)) {
-							return pacmanHitGhost = true;
+							if (pacman.state.power) {
+
+							} else {
+								state.lives -= 1;
+
+								// pacman is out of lives left
+								if (!state.lives) {
+									// RESTART GAME COMPLETELY - PACMAN IS OUT OF LIVES
+								} else {
+									// erase the animated element
+									layout[pacman.state.index].dinamic = layout[pacman.state.index].dinamic.filter(elem => elem.state.type !== 'C');
+
+									// initialize another instance of the animated element in it's original position
+									state.map.initAnimatedElement(pacman.state.initIndex, 'C');
+
+									cancelAnimationFrame(state.loopId);
+								}
+
+							}
+							// erase the animated element
+							layout[pacman.state.index].dinamic = layout[pacman.state.index].dinamic.filter(elem => elem.state.type !== 'C');
+
+							// initialize another instance of the animated element in it's original position
+							state.map.initAnimatedElement(pacman.state.initIndex, 'C');
+
 						}
 					});
 
-					if (pacmanHitGhost) {
-						// console.log('pacman died');
-					}
+
 				}
 
 				// Pacman eats food on touch
@@ -283,17 +306,6 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 					setTimeout(() => {
 						pacman.state.power = false;
 					}, 3000);
-
-					/// // /  / / / / / / / / / / / /
-					// erase the animated element
-					layout[pacman.state.index].dinamic = layout[pacman.state.index].dinamic.filter(elem => elem.state.type !== 'C');
-
-					// initialize another instance of the animated element in it's original position
-					state.map.initPacman(pacman.state.initIndex);
-
-
-
-
 
 				}
 
@@ -318,6 +330,22 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 			}
 			state.map.drawDinamic();
 		},
+
+
+
+		setLoopId (id) {
+			state.loopId = id;
+		},
+		isPaused() {
+			return !state.loopId;
+		},
+		play(loop) {
+			state.loopId = requestAnimationFrame(loop);
+		},
+		pause() {
+			cancelAnimationFrame(state.loopId);
+			state.loopId = null;
+		}
 	});
 };
 
