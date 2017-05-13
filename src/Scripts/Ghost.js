@@ -19,7 +19,7 @@ const Ghost = (canvas, x, y, index, tileWidth, tileHeight, color) => {
 		tileWidth,
 		canvas,
 
-		speed: random(1, 3),
+		speed: null,
 		velX: 0,
 		velY: 0,
 
@@ -42,13 +42,16 @@ const Ghost = (canvas, x, y, index, tileWidth, tileHeight, color) => {
 		scared: false,
 	};
 
+	/** Initialize each ghost. Their speed and behaviour varies with it's color */
+
 	if (color === 'skyblue' || color === 'red') {
+		state.speed = color === "red" ? random(2.8, 3) : random(2.4, 2.6);
 		state.direction = 'right';
 		state.velX = state.speed;
 	}
 
-	// pink and orange ghost frozen in the beginning of the game
 	if (color === 'pink' || color === 'orange') {
+		state.speed = color === "pink" ? random(2, 2.2) : random(1.6, 1.8);
 		state.direction = 'left';
 		state.velX = -state.speed;
 
@@ -58,7 +61,6 @@ const Ghost = (canvas, x, y, index, tileWidth, tileHeight, color) => {
 	return Object.assign({}, reachDestination(state), directionControl(state), positionUpdate(state), {
 		// draw after x, y, width, height
 		draw() {
-			const direction = state.frozen ? state.drawingDirection : state.direction;
 			const ctx = canvas.getContext('2d');
 
 			const width = state.width;
@@ -66,7 +68,13 @@ const Ghost = (canvas, x, y, index, tileWidth, tileHeight, color) => {
 			const x = state.x;
 			const y = state.y;
 
+			/** If a ghost if frozen, it's direction is changed on a fixed interval to make it look alive
+			 * (eye moving through the function randomEyeMovement)
+			 */
+			const direction = state.frozen ? state.drawingDirection : state.direction;
+
 			// GHOST BODY
+
 			ctx.beginPath();
 			ctx.fillStyle = state.scared ? 'darkblue' : state.color;
 
@@ -86,15 +94,32 @@ const Ghost = (canvas, x, y, index, tileWidth, tileHeight, color) => {
 			ctx.lineTo(x - width / 2, y + height / 2);
 			ctx.fill();
 
-
+			/** If the ghost is scared, it has a different styling  */
 			if (state.scared) {
-				// IRIS
+				// scared ghost eyes
 				ctx.fillStyle = 'white';
 				ctx.beginPath();
 
 				ctx.arc(x - width / 4, y - height / 7, width / 13, 0, Math.PI * 2);
 				ctx.arc(x + width / 4, y - height / 7, width / 13, 0, Math.PI * 2);
 				ctx.fill();
+
+				// scared ghost mouth
+				ctx.beginPath();
+				ctx.strokeStyle = "white";
+				ctx.lineWidth = 1;
+				ctx.moveTo(x + width / 3.5, y + height / 4);
+
+				ctx.lineTo(x + width / 5, y + height / 5);
+				ctx.lineTo(x + width / 9, y + height / 4);
+
+				ctx.lineTo(x, y + height / 5);
+				ctx.lineTo(x - width / 10, y + height / 4);
+
+				ctx.lineTo(x - width / 5, y + height / 5);
+				ctx.lineTo(x - width / 3.2, y + height / 4);
+
+				ctx.stroke();
 			} else {
 				// Eye holes
 				ctx.beginPath();
@@ -215,29 +240,6 @@ const Ghost = (canvas, x, y, index, tileWidth, tileHeight, color) => {
 					default:
 						alert('In ghost direction switch statement');
 				}
-			}
-
-
-
-
-
-			if (state.scared) {
-				// MOUTH
-				ctx.beginPath();
-				ctx.strokeStyle = "white";
-				ctx.lineWidth = 1;
-				ctx.moveTo(x + width / 3.5, y + height / 4);
-
-				ctx.lineTo(x + width / 5, y + height / 5);
-				ctx.lineTo(x + width / 9, y + height / 4);
-
-				ctx.lineTo(x, y + height / 5);
-				ctx.lineTo(x - width / 10, y + height / 4);
-
-				ctx.lineTo(x - width / 5, y + height / 5);
-				ctx.lineTo(x - width / 3.2, y + height / 4);
-
-				ctx.stroke();
 			}
 		},
 

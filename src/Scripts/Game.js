@@ -90,7 +90,6 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 			});
 		},
 
-
 		movePacman() {
 			const pacman = state.map.getPacman();
 			const map = state.map;

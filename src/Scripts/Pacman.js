@@ -168,9 +168,9 @@ const Pacman = (canvas, x, y, index, tileWidth, tileHeight) => {
 
 		type: 'C',
 
-		velX: 4,
+		velX: 3,
 		velY: 0,
-		speed: 4,
+		speed: 3,
 
 		animationStage: 0,
 		maxAnimationStage: 8,

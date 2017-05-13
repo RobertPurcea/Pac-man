@@ -78,10 +78,10 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 		foodTilesNumber: 0
 	};
 
-	// Create world
-
+	// viable ghost colors. DON'T CHANGE
 	const ghostColors = ['red', 'skyblue', 'pink', 'orange'];
 
+	// initialize every element in the game in the map array
 	const map = state.layout.map((element, index) => {
 		// calculate center coordinates
 		const x = state.tileWidth / 2 + state.tileWidth * (index % state.numberOfHorizontalTiles);

@@ -179,3 +179,6 @@ pause the previous game before making a new one
 
 
 
+TO DO
+
+SKY BLUE GHOST DISSAPEARS WHEN THE RED ONE IS EATEN
