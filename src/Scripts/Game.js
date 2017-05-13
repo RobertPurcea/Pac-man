@@ -96,8 +96,7 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 			const map = state.map;
 			const layout = map.getMap();
 
-			// console.log(!pacman.isStuck());
-			// console.log(pacman.state);
+
 
 
 
@@ -130,6 +129,7 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 					pacman.state.destination = currentDirectionNextTile;
 					pacman.changeDirection();
 				}
+				
 			} else if (!pacman.isStuck()) {
 				pacman.updatePosition();
 				pacman.updateAnimation();
@@ -257,6 +257,7 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 					// test if the any of the dinamic elements from this tile hit pacman
 					tile.dinamic.forEach(elem => {
 						if (elem.state.type === 'M' && collide(pacman.state, elem.state)) {
+							
 							// active powerup ongoing -> respawn the ghost. pacman is unharmed
 							if (pacman.state.power) {
 								// erase the animated element
@@ -283,8 +284,6 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 							}
 						}
 					});
-
-
 				}
 
 				// increase score as pacman eats food tiles. Release ghost once pacman eats a part of the total food 
@@ -318,14 +317,9 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 
 		draw(canvas1, canvas2) {
 			if (!canvas2) {
-				clear({
-					foregroundCanvas
-				});
+				clear(foregroundCanvas);
 			} else {
-				clear({
-					foregroundCanvas,
-					backgroundCanvas
-				});
+				clear(foregroundCanvas,	backgroundCanvas);
 				state.map.drawStatic();
 			}
 			state.map.drawDinamic();

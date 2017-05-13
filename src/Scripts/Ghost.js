@@ -4,7 +4,7 @@ import {
 	positionUpdate,
 } from './Pacman';
 import {
-	random
+	random,
 } from './utility';
 
 
@@ -39,7 +39,7 @@ const Ghost = (canvas, x, y, index, tileWidth, tileHeight, color) => {
 
 		idleEyeMovement: false,
 		inGhostHouse: true,
-		scared: false
+		scared: false,
 	};
 
 	if (color === 'skyblue' || color === 'red') {
