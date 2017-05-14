@@ -24,28 +24,34 @@ function getDirectionsToEmptyTiles(map, index, wallShrink, mapState) {
 
 	let right = (((index + 1) % width !== 0) && (map[index + 1].static.type !== '#')) ? wallShrink : 0;
 	let left = ((index % width !== 0) && (map[index - 1].static.type !== '#')) ? wallShrink : 0;
+
 	let top = ((map[index - width] !== undefined) && (map[index - width].static.type !== '#')) ? wallShrink : 0;
 	let bottom = ((map[index + width] !== undefined) && (map[index + width].static.type !== '#')) ? wallShrink : 0;
 
 	// reduce corners
 
-	if (map[index - width - 1]) {
-		if (index % width !== 0 && (map[index - width - 1].static.type !== '#') && (!top && !left)) {
+	/** Calculate by how much the wall should shrink on certain corners
+	 * the first check test whether the current tile is on the side of the map
+	 * and prevents it from reducing it's size on that side
+	 */
+
+	// topleft and bottomleft corners
+	if (index % width !== 0) {
+		if (map[index - width - 1] && (map[index - width - 1].static.type !== '#') && (!top && !left)) {
 			topleft = wallShrink;
 		}
-	}
-	if (map[index - width + 1]) {
-		if (map[index - width + 1].static.type !== '#' && (!top && !right)) {
-			topright = wallShrink;
-		}
-	}
-	if (map[index + width - 1]) {
-		if (map[index + width - 1].static.type !== '#' && (!bottom && !left)) {
+		if (map[index + width - 1] && (map[index + width - 1].static.type !== '#') && (!bottom && !left)) {
 			bottomleft = wallShrink;
 		}
 	}
-	if (map[index + width + 1]) {
-		if ((index + width + 1) % width !== 0 && map[index + width + 1].static.type !== '#' && (!bottom && !right)) {
+
+	// topright and bottom right
+	if ((index + 1) % width !== 0) {
+		if (map[index - width + 1] && (map[index - width + 1].static.type !== '#') && (!top && !right)) {
+			topright = wallShrink;
+		}
+
+		if (map[index + width + 1] && (map[index + width + 1].static.type !== '#') && (!bottom && !right)) {
 			bottomright = wallShrink;
 		}
 	}
@@ -323,8 +329,8 @@ const Map = (backgroundCanvas, foregroundCanvas, wallColor) => {
 
 					ctx.beginPath();
 
-					ctx.moveTo(el.static.x - state.tileWidth / 2, el.static.y);
-					ctx.lineTo(el.static.x + state.tileWidth / 2, el.static.y);
+					ctx.moveTo(el.static.x - state.tileWidth / 2 - wallShrink, el.static.y);
+					ctx.lineTo(el.static.x + state.tileWidth / 2 + wallShrink, el.static.y);
 
 					ctx.stroke();
 				}

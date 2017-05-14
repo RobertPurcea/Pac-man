@@ -1,9 +1,9 @@
-*{
+* {
 	padding: 0;
 	margin: 0;
 }
 
-html{
+html {
 	overflow: hidden;
 	display: flex;
 	justify-content: center;
@@ -11,16 +11,20 @@ html{
 	align-items: center;
 }
 
-canvas{
+canvas {
 	position: absolute;
-	left: 0;
+	left: 50%;
+	transform: translate(-50%, 0);
+
+}
+
+#cover {
+	position: absolute;
+	left: 50%;
+	transform: translate(-50%, 0);
+	background-color: rgba(200,100,100,0.3);
 }
 
 #background {
 	background-color: black;
 }
-
-#foreground {
-	border: 1px solid "red";
-}
-

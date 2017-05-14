@@ -85,7 +85,8 @@ const positionUpdate = state => ({
 				state.x > state.canvas.width - state.tileWidth ||
 				state.x < state.tileWidth ||
 				state.y > state.canvas.height - state.tileHeight ||
-				state.y < state.tileHeight
+				state.y < state.tileHeight || 
+				state.scared
 			)) {
 			state.x += state.velX / 2;
 			state.y += state.velY / 2;
@@ -180,6 +181,8 @@ const Pacman = (canvas, x, y, index, tileWidth, tileHeight) => {
 		currentDirection: 'right',
 		destination: null,
 		freeze: false,
+
+		powerAlmostGone: false,
 	};
 
 	return Object.assign({},

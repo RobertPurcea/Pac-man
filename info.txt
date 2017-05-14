@@ -183,15 +183,23 @@ WALLS
 A tile has a side that does not face wall -> stroke that side.
 A tile has two sides on the same corner that do not face a wall -> stroke the two sides with an angle between them 
 
+GAME END
 
+0 lives left -> reassign the game variable to a new instance of the game object. Leave everything else as it acts based on the game var 
+             -> begin the new game in a paused state 
+
+1 or move lives left -> reset all animated elements 
+                     -> pause the game 
 
 TO DO
 
-Make the reduceWallSize function work for any type of layout(2 cases remaining in the conditions)
-If pacman loses the game what happens?
-If pacman loses a round what happens?
-Add an animation to the power-ups(glowing or smth)
-When the game is paused/not started, add a user interface page positioned on top of the game.(make it a little transparent)
-Add animation the announces that a ghost is about to leave the scared state
-Make ghosts slow down and ?maybe? change their target while they are scared 
-Add sounds 
+Optional 
+  Add an animation to the power-ups(glowing or smth)
+  Make the screen as wide as possible while playing  
+  Add sounds 
+
+Mandatory
+  When the game is paused/not started, add a user interface page positioned on top of the game.(make it a little transparent)
+  Add a dying animation for pacman 
+  
+

@@ -40,6 +40,8 @@ const Ghost = (canvas, x, y, index, tileWidth, tileHeight, color) => {
 		idleEyeMovement: false,
 		inGhostHouse: true,
 		scared: false,
+
+		almostNotScared: false,
 	};
 
 	/** Initialize each ghost. Their speed and behaviour varies with it's color */
@@ -61,6 +63,8 @@ const Ghost = (canvas, x, y, index, tileWidth, tileHeight, color) => {
 	return Object.assign({}, reachDestination(state), directionControl(state), positionUpdate(state), {
 		// draw after x, y, width, height
 		draw() {
+			let scared = state.almostNotScared || !state.scared ? false : true;
+		
 			const ctx = canvas.getContext('2d');
 
 			const width = state.width;
@@ -76,7 +80,7 @@ const Ghost = (canvas, x, y, index, tileWidth, tileHeight, color) => {
 			// GHOST BODY
 
 			ctx.beginPath();
-			ctx.fillStyle = state.scared ? 'darkblue' : state.color;
+			ctx.fillStyle = scared ? 'darkblue' : state.color;
 
 			ctx.moveTo(x - width / 2, y + height / 2);
 			ctx.lineTo(x - width / 2, y - height / 10);
@@ -95,7 +99,7 @@ const Ghost = (canvas, x, y, index, tileWidth, tileHeight, color) => {
 			ctx.fill();
 
 			/** If the ghost is scared, it has a different styling  */
-			if (state.scared) {
+			if (scared) {
 				// scared ghost eyes
 				ctx.fillStyle = 'white';
 				ctx.beginPath();

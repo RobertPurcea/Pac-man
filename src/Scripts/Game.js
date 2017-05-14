@@ -4,7 +4,8 @@ import {
 	collide,
 	oppositeDirection,
 	distance,
-	count
+	count,
+	random
 } from './utility';
 
 /** Remove a dinamic element from it's current tile, and add it to it's destination's tile(modifying it's index too) */
@@ -61,15 +62,32 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 	const state = {
 		score: 0,
 		lives: 3,
-		loopId: null
+		loopId: null,
+
+		almostNotScaredInterval: null
 	};
 	const directions = ['right', 'left', 'down', 'up'];
+
+
+	function play(loop) {
+		state.loopId = requestAnimationFrame(loop);
+	}
+
+	function pause() {
+		cancelAnimationFrame(state.loopId);
+		state.loopId = null;
+	}
 
 	return Object.assign({}, {
 
 		initialize() {
-			foregroundCanvas.width = backgroundCanvas.width = 700; // original: 
-			foregroundCanvas.height = backgroundCanvas.height = 651;
+			const cover = document.querySelector("#cover");
+			cover.style.width = 700 + "px";
+			cover.style.height = 651 + "px";
+
+			foregroundCanvas.width = backgroundCanvas.width = cover.style.width = 700; // original: 700, 651
+			foregroundCanvas.height = backgroundCanvas.height = cover.style.height = 651; // 
+
 
 			state.map = Map(backgroundCanvas, foregroundCanvas, "darkblue");
 
@@ -88,6 +106,7 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 				ghost.toggleRandomEyeMovement();
 				ghost.state.target = pacman;
 			});
+
 		},
 
 		movePacman() {
@@ -128,7 +147,7 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 					pacman.state.destination = currentDirectionNextTile;
 					pacman.changeDirection();
 				}
-				
+
 			} else if (!pacman.isStuck()) {
 				pacman.updatePosition();
 				pacman.updateAnimation();
@@ -148,11 +167,19 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 				if (!ghost.state.frozen) {
 
 					if (ghost.reachDestination()) {
+
+						// SCARED MANAGEMENT
 						if (pacman.state.power) {
 							ghost.state.scared = true;
 						} else {
 							ghost.state.scared = false;
 						}
+						if (pacman.state.powerAlmostGone) {
+							ghost.state.almostNotScared = true;
+						} else {
+							ghost.state.almostNotScared = false;
+						}
+
 
 						/** update ghost's position and index in the main game collection(map array) */
 						updateInArray(ghost, layout, function (el) {
@@ -162,8 +189,6 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 
 						/** Get all viable next paths for the ghost */
 						let possiblePaths = getPossiblePaths(ghost, map, directions);
-
-
 
 
 						/** Override normal behaviour when a ghost is in the ghost house */
@@ -189,8 +214,6 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 
 
 
-
-
 						/** If there is only one possible way ahead continue on the current path(a ghost cannot turn in the opposite direction) */
 						if (possiblePaths.length === 1) {
 							ghost.state.destination = possiblePaths[0].tile;
@@ -200,23 +223,25 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 
 						/** If the ghost is in an intersection, it follows the next tile that is the closest to it's target(direct distance, not after tiles*/
 						if (possiblePaths.length > 1) {
-							let shortestDistance;
 							let nextPath;
 
-							possiblePaths.forEach(path => {
-								// if the target is not pacman, calculate distance to the static position of the target
-								ghost.state.target.state = ghost.state.target.state || ghost.state.target.static;
+							if (ghost.scared) {
+								nextPath = possiblePaths[random(0, possiblePaths.length)];
+							} else {
+								let shortestDistance;
 
-								const distanceToTarget = distance(ghost.state.target.state, path.tile.static);
+								possiblePaths.forEach(path => {
+									const distanceToTarget = distance(ghost.state.target.state, path.tile.static);
 
-								shortestDistance = shortestDistance || distanceToTarget;
-								nextPath = nextPath || path;
+									shortestDistance = shortestDistance || distanceToTarget;
+									nextPath = nextPath || path;
 
-								if (distanceToTarget < shortestDistance) {
-									shortestDistance = distanceToTarget;
-									nextPath = path;
-								}
-							});
+									if (distanceToTarget < shortestDistance) {
+										shortestDistance = distanceToTarget;
+										nextPath = path;
+									}
+								});
+							}
 
 							ghost.state.destination = nextPath.tile;
 							ghost.state.direction = nextPath.direction;
@@ -256,30 +281,31 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 					// test if the any of the dinamic elements from this tile hit pacman
 					tile.dinamic.forEach(elem => {
 						if (elem.state.type === 'M' && collide(pacman.state, elem.state)) {
-							
+
 							// active powerup ongoing -> respawn the ghost. pacman is unharmed
 							if (pacman.state.power) {
-								// erase the animated element
-								layout[elem.state.index].dinamic = layout[elem.state.index].dinamic.filter(elem => elem.state.type !== 'M');
-
-								// initialize another instance of the animated element in it's original position
+								layout[elem.state.index].dinamic = layout[elem.state.index].dinamic.filter(animatedElement => (
+									elem.state.color !== animatedElement.state.color
+								));
 								state.map.initAnimatedElement(elem.state.initIndex, 'M', elem.state.color);
 							} else {
 								state.lives -= 1;
 
-								// pacman is out of lives left
-								if (!state.lives) {
-									// RESTART GAME COMPLETELY - PACMAN IS OUT OF LIVES
-								} else {
-									// erase the animated element
-									layout[pacman.state.index].dinamic = layout[pacman.state.index].dinamic.filter(elem => elem.state.type !== 'C');
+								// Reinitialize every animated element 
 
-									// initialize another instance of the animated element in it's original position
-									state.map.initAnimatedElement(pacman.state.initIndex, 'C');
+								// Respawn pacman
+								layout[pacman.state.index].dinamic = layout[pacman.state.index].dinamic.filter(elem => elem.state.type !== 'C');
+								state.map.initAnimatedElement(pacman.state.initIndex, 'C');
 
-									cancelAnimationFrame(state.loopId);
-								}
+								// Respawn ghosts 
+								ghosts.forEach(ghost => {
+									layout[ghost.state.index].dinamic = layout[ghost.state.index].dinamic.filter(elem => elem.state.type !== 'M');
+									state.map.initAnimatedElement(ghost.state.initIndex, 'M', ghost.state.color);
+								});
 
+
+								// pause game after pacman lost a life
+								pause();
 							}
 						}
 					});
@@ -294,6 +320,7 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 					state.score += 1;
 
 					releaseGhosts(state.score, state.map.state.foodTilesNumber, ghosts);
+
 				}
 
 				// If pacman hits a powerup, ghosts become scared for 3 seconds
@@ -302,9 +329,21 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 					redrawStatic = true;
 
 					pacman.state.power = true;
+
+					// interval that enables the ghost animation when the scared state is about to wear out
 					setTimeout(() => {
+						state.almostNotScaredInterval = setInterval(() => {
+							pacman.state.powerAlmostGone = !pacman.state.powerAlmostGone;
+						}, 300);
+					}, 2000);
+
+					// remove the upper interval and set scared to false after 4 seconds 
+					setTimeout(() => {
+						clearInterval(state.almostNotScaredInterval);
+
 						pacman.state.power = false;
-					}, 3000);
+						pacman.state.powerAlmostGone = false;
+					}, 4000);
 
 				}
 
@@ -318,7 +357,7 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 			if (!canvas2) {
 				clear(foregroundCanvas);
 			} else {
-				clear(foregroundCanvas,	backgroundCanvas);
+				clear(foregroundCanvas, backgroundCanvas);
 				state.map.drawStatic();
 			}
 			state.map.drawDinamic();
@@ -332,12 +371,10 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 		isPaused() {
 			return !state.loopId;
 		},
-		play(loop) {
-			state.loopId = requestAnimationFrame(loop);
-		},
-		pause() {
-			cancelAnimationFrame(state.loopId);
-			state.loopId = null;
+		play,
+		pause,
+		noLivesLeft() {
+			return state.lives === 0;
 		}
 	});
 };
