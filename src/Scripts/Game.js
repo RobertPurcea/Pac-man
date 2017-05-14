@@ -64,19 +64,12 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 		lives: 3,
 		loopId: null,
 
-		almostNotScaredInterval: null
+		almostNotScaredInterval: null,
+		pacmanInterval: null,
+		intervalHelper: 0,
 	};
 	const directions = ['right', 'left', 'down', 'up'];
 
-
-	function play(loop) {
-		state.loopId = requestAnimationFrame(loop);
-	}
-
-	function pause() {
-		cancelAnimationFrame(state.loopId);
-		state.loopId = null;
-	}
 
 	return Object.assign({}, {
 
@@ -113,9 +106,6 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 			const pacman = state.map.getPacman();
 			const map = state.map;
 			const layout = map.getMap();
-
-
-
 
 
 			/** Update pacman's position or change his destination */
@@ -291,21 +281,53 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 							} else {
 								state.lives -= 1;
 
-								// Reinitialize every animated element 
-
-								// Respawn pacman
-								layout[pacman.state.index].dinamic = layout[pacman.state.index].dinamic.filter(elem => elem.state.type !== 'C');
-								state.map.initAnimatedElement(pacman.state.initIndex, 'C');
-
-								// Respawn ghosts 
-								ghosts.forEach(ghost => {
-									layout[ghost.state.index].dinamic = layout[ghost.state.index].dinamic.filter(elem => elem.state.type !== 'M');
-									state.map.initAnimatedElement(ghost.state.initIndex, 'M', ghost.state.color);
-								});
-
-
-								// pause game after pacman lost a life
 								pause();
+
+
+								// Reinitialize every animated element 
+								setTimeout(() => {
+
+									// Respawn pacman
+									layout[pacman.state.index].dinamic = layout[pacman.state.index].dinamic.filter(elem => elem.state.type !== 'C');
+									state.map.initAnimatedElement(pacman.state.initIndex, 'C');
+
+									// Respawn ghosts 
+									ghosts.forEach(ghost => {
+										layout[ghost.state.index].dinamic = layout[ghost.state.index].dinamic.filter(elem => elem.state.type !== 'M');
+										state.map.initAnimatedElement(ghost.state.initIndex, 'M', ghost.state.color);
+									});
+
+									state.delay = false;
+
+								}, 1000);
+
+								state.pacmanInterval = setInterval(() => {
+									//debugger;
+
+									if (state.intervalHelper % 2 === 0) {
+										pacman.draw();
+									} else {
+										pacman.draw('red')
+									}
+
+									state.intervalHelper += 1;
+
+									if (state.intervalHelper === 4) {
+										clearInterval(state.pacmanInterval);
+										state.intervalHelper = 0;
+										state.pacmanInterval = null;
+									}
+								}, 200);
+
+								state.delay = true;
+
+
+
+
+
+
+								// // pause game after pacman lost a life
+								// pause();
 							}
 						}
 					});
@@ -371,10 +393,18 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 		isPaused() {
 			return !state.loopId;
 		},
-		play,
-		pause,
+		play(loop) {
+			state.loopId = requestAnimationFrame(loop);
+		},
+		pause() {
+			cancelAnimationFrame(state.loopId);
+			state.loopId = null;
+		},
 		noLivesLeft() {
 			return state.lives === 0;
+		},
+		isDelayed() {
+			return state.delay;
 		}
 	});
 };

@@ -193,13 +193,13 @@ const Pacman = (canvas, x, y, index, tileWidth, tileHeight) => {
 			 * Draw pacman on the canvas parameter received in the pacman constructor
 			 * The drawing is completely dependent on pacman's size and positioning and can be scaled
 			 */
-			draw() {
+			draw(color) {
 				const ctx = canvas.getContext('2d');
 
 				ctx.beginPath();
 				ctx.arc(state.x, state.y, state.radius, ...(getDrawingAngles(state)));
 				ctx.lineTo(state.x, state.y);
-				ctx.fillStyle = 'yellow';
+				ctx.fillStyle = color || 'yellow';
 				ctx.fill();
 
 				ctx.beginPath();

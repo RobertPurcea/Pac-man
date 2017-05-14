@@ -38,7 +38,13 @@ const loop = () => {
 
 	// check if pacman collides with any element. Act accordingly
 	if (game.checkImpact()) {
-		game.draw('front', 'back');
+		if (game.isDelayed) {
+			setTimeout(() => {
+				game.draw('front', 'back');
+			}, 1500);
+		} else {
+			game.draw('front', 'back');
+		}
 	} else {
 		game.draw('front');
 	}
