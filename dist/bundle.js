@@ -1413,24 +1413,16 @@ exports.f = {}.propertyIsEnumerable;
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "j", function() { return round; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "h", function() { return random; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "f", function() { return indexToDoubleIndex; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "g", function() { return doubleIndexToIndex; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return random; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "g", function() { return indexToDoubleIndex; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "h", function() { return doubleIndexToIndex; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "i", function() { return almostIntersect; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "e", function() { return clear; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "d", function() { return collide; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "f", function() { return clear; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "e", function() { return collide; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return oppositeDirection; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return distance; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "d", function() { return distance; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return count; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "k", function() { return clone; });
-// returns the number rounded to x decimals
-const round = (number, decimals) => Math.round(number * 10 ** decimals) / 10 ** decimals;
-
-// returns a random value between min and max
-const random = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
-
-// count how many times an element appears in an array with a given condition
-const count = (array, condition) => array.reduce((acc, val) => condition(val) ? ++acc : acc, 0);
+// Index transformation
 
 // transforms a simple index into a x, y index
 const indexToDoubleIndex = (array, index) => [index % array.numberOfHorizontalTiles, Math.floor(index / array.numberOfHorizontalTiles)];
@@ -1438,7 +1430,35 @@ const indexToDoubleIndex = (array, index) => [index % array.numberOfHorizontalTi
 // transforms a double index( x, y ) into a simple index
 const doubleIndexToIndex = (array, index1, index2) => index1 + index2 * array.numberOfHorizontalTiles;
 
-// return the opposite direction
+// Collision detection
+
+/** Calculate the distance between two elements
+ * If they have a radius property, calculate the distance between their margins, not their centers
+ */
+const distance = (element1, element2) => {
+	element1.radius = element1.radius || 0;
+	element2.radius = element2.radius || 0;
+
+	return Math.sqrt((element2.x - element1.x) ** 2 + (element2.y - element1.y) ** 2) - element1.radius - element2.radius;
+};
+
+/** determine if the distance between two points is less than a certain speed */
+const almostIntersect = (x1, y1, x2, y2, speed) => {
+	return distance({
+		x: x1,
+		y: y1
+	}, {
+		x: x2,
+		y: y2
+	}) <= speed;
+};
+
+/** Determines if two elements collide. */
+const collide = (element1, element2) => distance(element1, element2) <= 0;
+
+// Other
+
+// return the opposite direction (left, right, up, down)
 const oppositeDirection = direction => {
 	switch (direction) {
 		case 'right':
@@ -1454,14 +1474,8 @@ const oppositeDirection = direction => {
 	}
 };
 
-/** determine if the distance between two points is <= than the speed of the animated element */
-const almostIntersect = (x1, y1, x2, y2, speed) => {
-	const distance = Math.abs(Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2));
-	return distance <= speed;
-};
-
 /** Clear the provided canvases. If one of them is not provided it will simply be ignored */
-function clear({ backgroundCanvas, foregroundCanvas }) {
+function clear(foregroundCanvas, backgroundCanvas) {
 	if (backgroundCanvas !== undefined) {
 		backgroundCanvas.getContext('2d').clearRect(0, 0, backgroundCanvas.width, backgroundCanvas.height);
 	}
@@ -1470,30 +1484,14 @@ function clear({ backgroundCanvas, foregroundCanvas }) {
 	}
 }
 
-const distance = (element1, element2) => {
-	element1.radius = element1.radius || 0;
-	element2.radius = element2.radius || 0;
+// returns the number rounded to x decimals
+const round = (number, decimals) => Math.round(number * 10 ** decimals) / 10 ** decimals;
 
-	return Math.abs(Math.sqrt((element2.x - element1.x) ** 2 + (element2.y - element1.y) ** 2)) - element1.radius - element2.radius;
-};
+// returns a random value between min and max
+const random = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
-/**
- * Determines if two elements collide.
- * Needs access to x,y and radius properties for each of the elements.
- * @param {*} element1 
- * @param {*} element2 
- */
-function collide(element1, element2) {
-	return distance(element1, element2) <= 0.3;
-}
-
-function clone(obj) {
-	let container = {};
-	for (let key in obj) {
-		container[key] = obj[key];
-	}
-	return container;
-}
+// count how many times an element appears in an array with a given condition
+const count = (array, condition) => array.reduce((acc, val) => condition(val) ? ++acc : acc, 0);
 
 
 
@@ -2694,35 +2692,38 @@ define(String.prototype, "padRight", "".padEnd);
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Pacman; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return reachDestination; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return directionControl; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "d", function() { return positionUpdate; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return pacmanAndGhostCommon; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__utility__ = __webpack_require__(48);
 
 
 // shared functionality
 
-/**
- * If the distance between the animated element and it's destination
- * is less than or equal to it's speed, move the animated element directly
- * on it's destination point and return true otherwise do nothing and return false
- *
- * This prevents the animated element from stopping after the destination instead of exactly on it
- */
-const reachDestination = state => ({
-	reachDestination() {
+const pacmanAndGhostCommon = state => ({
+	/**
+  * Determines if the distance between the animated element and it's destination it less than it's speed
+  * 
+  * If the distance between the animated element and it's destination
+  * is less than or equal to it's speed, following the usual moving pattern, 
+  * the next position that the element is going to have is after his destination
+  * For this reason, when an distance between an element and his destination is less than 
+  * his speed, he is forced to move on top of his destination as his next move
+  *
+  * This prevents the animated element from stopping after the destination instead of exactly on it
+  */
+	isNearDestination() {
 		if (__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__utility__["i" /* almostIntersect */])(state.x, state.y, state.destination.static.x, state.destination.static.y, state.speed)) {
-			state.x = state.destination.static.x;
-			state.y = state.destination.static.y;
 			return true;
 		}
+	},
+	/**
+  * 'Teleports' the animated element on the exact location where his destination is 
+  */
+	reachDestination() {
+		state.x = state.destination.static.x;
+		state.y = state.destination.static.y;
+	},
 
-		return false;
-	}
-});
-
-// change the velocity of the element to follow the current direction
-const directionControl = state => ({
+	/** change the velocity of the element to follow the current direction */
 	changeDirection() {
 		const direction = state.currentDirection || state.direction;
 
@@ -2746,30 +2747,36 @@ const directionControl = state => ({
 			default:
 				console.log(`In pacman change direction function. Current direction: ${direction}`);
 		}
-	}
-});
+	},
 
-// update position by the current velocity
-const positionUpdate = state => ({
+	/**
+  * Update the position of the animated element.
+  * Normally, the position is updated with the value of the current velocity.
+  * There is an exception, though: 
+  * 	When a ghost is located near the shortcut paths or she is scared,
+  * 	her location will only be updated with half the normal velocity
+  */
 	updatePosition() {
 		const canvas = state.canvas;
 
 		//	if the element gets out of the map, he is relocated in the opposite side of the map
-		if (state.x > canvas.width) {
-			state.x = 0;
-		}
-		if (state.y > canvas.height) {
-			state.y = 0;
-		}
-		if (state.x < 0) {
-			state.x = canvas.width;
-		}
-		if (state.y < 0) {
-			state.y = canvas.height;
-		}
+		(function relocate() {
+			if (state.x > canvas.width) {
+				state.x = 0;
+			}
+			if (state.y > canvas.height) {
+				state.y = 0;
+			}
+			if (state.x < 0) {
+				state.x = canvas.width;
+			}
+			if (state.y < 0) {
+				state.y = canvas.height;
+			}
+		})();
 
-		// update position. If the ghosts are near the shortcuts, their speed is half of the normal one
-		if (state.type === 'M' && (state.x > state.canvas.width - state.tileWidth || state.x < state.tileWidth || state.y > state.canvas.height - state.tileHeight || state.y < state.tileHeight)) {
+		// If the ghosts are near the shortcut paths or they are scared update their position with half the speed
+		if (state.type === 'M' && (state.x > state.canvas.width - state.tileWidth || state.x < state.tileWidth || state.y > state.canvas.height - state.tileHeight || state.y < state.tileHeight || state.scared)) {
 			state.x += state.velX / 2;
 			state.y += state.velY / 2;
 		} else {
@@ -2830,24 +2837,23 @@ function getEyePosition(state) {
 	return state.velY ? [state.x - state.radius / 2, state.y] : [state.x, state.y - state.radius / 2];
 }
 
-// OBJECT INTERFACE PACMAN
 const Pacman = (canvas, x, y, index, tileWidth, tileHeight) => {
-	let state = {
+	const state = {
 		x,
 		y,
+		index,
+		initIndex: index,
 
 		canvas,
+		radius: tileWidth * 0.4,
 		tileWidth,
 		tileHeight,
 
-		index,
-		initIndex: index,
 		type: 'C',
 
 		velX: 3,
 		velY: 0,
 		speed: 3,
-		radius: tileWidth * 0.4,
 
 		animationStage: 0,
 		maxAnimationStage: 8,
@@ -2856,22 +2862,20 @@ const Pacman = (canvas, x, y, index, tileWidth, tileHeight) => {
 		wantedUserDirection: 'right',
 		currentDirection: 'right',
 		destination: null,
+		freeze: false,
 
-		freeze: false
+		powerAlmostGone: false,
+		controlsHandler: null
 	};
 
-	return Object.assign({}, reachDestination(state), directionControl(state), positionUpdate(state), {
-		/**
-   * Draw pacman on the canvas parameter received in the pacman constructor
-   * The drawing is completely dependent on pacman's size and positioning and can be scaled
-   */
-		draw() {
+	return Object.assign({}, pacmanAndGhostCommon(state), {
+		draw(color) {
 			const ctx = canvas.getContext('2d');
 
 			ctx.beginPath();
 			ctx.arc(state.x, state.y, state.radius, ...getDrawingAngles(state));
 			ctx.lineTo(state.x, state.y);
-			ctx.fillStyle = 'yellow';
+			ctx.fillStyle = color || 'yellow';
 			ctx.fill();
 
 			ctx.beginPath();
@@ -2881,17 +2885,14 @@ const Pacman = (canvas, x, y, index, tileWidth, tileHeight) => {
 		},
 
 		/**
-   * Change wantedUserDirection to the current direction pointed by the key event handler
-   * Set freeze to false to allow checking once more if this direction is now valid(can be copied as a current direction)
+   * Add a function to state.controlsHandler
+   * This functions acts as the callback to the keydown event listener added here 
+   * It changes wantedUserDirection to the current direction pointed by the key event handler
+   * It sets freeze to false to allow checking once more if this direction
+   * is now valid(can be copied as a current direction)
    */
 		setControls(up, right, down, left) {
-			let lastEvent;
-
-			document.addEventListener('keydown', e => {
-				// ignore multiple consecutive keypresses of the same key
-				if (lastEvent && lastEvent.key === e.key) return;
-				lastEvent = e;
-
+			function handle(e) {
 				if ([up, right, left, down].indexOf(e.key) !== -1) {
 					state.freeze = false;
 				}
@@ -2913,13 +2914,23 @@ const Pacman = (canvas, x, y, index, tileWidth, tileHeight) => {
 					default:
 						console.log(`Wrong key. Use up: ${up}, right: ${right}, down: ${down}, left: ${left}`);
 				}
-			});
+			}
+
+			state.controlsHandler = handle;
+
+			document.addEventListener('keydown', state.controlsHandler);
 		},
 
 		/**
-   * Update pacman's position and animation.
+   * remove key handler with the function present in state.controlsHandler
+   */
+		removeControls() {
+			document.removeEventListener('keydown', state.controlsHandler);
+		},
+
+		/**
+   * Update pacman's animation.
    * The animation progresses until pacman's mouth is opened at it's maximum then is reverses
-   * If pacman leaves the map, he is relocated on it's opposite side
    */
 		updateAnimation() {
 			// if pacman is opening his mouth, increment animationStage, else decrement
@@ -2938,17 +2949,10 @@ const Pacman = (canvas, x, y, index, tileWidth, tileHeight) => {
 		get state() {
 			return state;
 		},
+
 		isStuck() {
 			return state.freeze === true;
-		},
-
-		reset() {
-			state = {};
-		},
-		getInitialState() {
-			return __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__utility__["k" /* clone */])(initialState);
 		}
-
 	});
 };
 
@@ -3735,15 +3739,28 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 if (false) module.hot.accept;
 console.clear();
 
-// SETUP 
+// setup canvas and game interface dimensions 
+
+const gameWidth = 840; // multiple of 28
+const gameHeight = 775; // multiple of 31
 
 const backgroundCanvas = document.querySelector("#background");
 const foregroundCanvas = document.querySelector("#foreground");
+const cover = document.querySelector("#cover");
 
-const game = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__Scripts_Game_js__["a" /* default */])(backgroundCanvas, foregroundCanvas);
+cover.style.width = gameWidth + "px";
+cover.style.height = gameHeight + "px";
+
+foregroundCanvas.width = backgroundCanvas.width = gameWidth;
+foregroundCanvas.height = backgroundCanvas.height = gameHeight;
+
+// initialize game 
+
+let game = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__Scripts_Game_js__["a" /* default */])(backgroundCanvas, foregroundCanvas);
+
 game.initialize();
 
-/** Start or pause the game on spacebar keypress */
+/** Allow pausing/resuming the game by pressing spacebar*/
 document.addEventListener('keydown', e => {
 	if (e.key === ' ') {
 		if (game.isPaused()) {
@@ -3754,20 +3771,61 @@ document.addEventListener('keydown', e => {
 	}
 });
 
-// GAME LOOP
+// game loop
 
 const loop = () => {
+	// call loop async
+	game.setLoopId(requestAnimationFrame(loop));
+
+	// move pacman and ghosts
 	game.movePacman();
 	game.moveGhosts();
 
-	if (game.checkImpact()) {
-		game.draw('front', 'back');
-	} else {
-		game.draw('front');
-	}
+	// check if pacman collides with any element
+	game.actOnCollision();
 
-	game.setLoopId(requestAnimationFrame(loop));
+	if (game.isFrozen()) {
+		setTimeout(() => {
+			if (game.needsStaticRedraw()) {
+				game.draw('front', 'back');
+			} else {
+				game.draw('front');
+			}
+
+			/** Create a new game by overwriting the existing game object */
+			if (game.noLivesLeft()) {
+				game.pause();
+				game.removeKeyHandler();
+
+				game = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__Scripts_Game_js__["a" /* default */])(backgroundCanvas, foregroundCanvas);
+				game.initialize();
+			}
+		}, 1000);
+	} else {
+		if (game.needsStaticRedraw()) {
+			game.draw('front', 'back');
+		} else {
+			game.draw('front');
+		}
+
+		/** Create a new game by overwriting the existing game object */
+		if (game.noLivesLeft()) {
+			game.pause();
+			game.removeKeyHandler();
+
+			game = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__Scripts_Game_js__["a" /* default */])(backgroundCanvas, foregroundCanvas);
+			game.initialize();
+		}
+	}
 };
+
+// if (game.isDelayed) {
+// 	setTimeout(() => {
+// 		game.draw('front', 'back');
+// 	}, 1500);
+// } else {
+// 	game.draw('front', 'back');
+// }
 
 /***/ }),
 /* 118 */
@@ -3780,7 +3838,7 @@ const loop = () => {
 
 
 /** Remove a dinamic element from it's current tile, and add it to it's destination's tile(modifying it's index too) */
-function updateInArray(element, layout, condition) {
+function updateInGameArray(element, layout, condition) {
 	// remove from the last tile
 	layout[element.state.index].dinamic = layout[element.state.index].dinamic.filter(el => condition(el));
 
@@ -3828,22 +3886,36 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 	const state = {
 		score: 0,
 		lives: 3,
-		loopId: null
+		directions: ['right', 'left', 'down', 'up'],
+
+		gameLoopId: null,
+		needsStaticRedraw: null,
+
+		almostNotScaredInterval: null,
+		pacmanInterval: null,
+		intervalHelper: 0,
+
+		frozen: null
 	};
-	const directions = ['right', 'left', 'down', 'up'];
+
+	function pause() {
+		cancelAnimationFrame(state.gameLoopId);
+		state.gameLoopId = null;
+
+		document.querySelector("#cover").style.display = "block";
+	}
 
 	return Object.assign({}, {
 
 		initialize() {
-			foregroundCanvas.width = backgroundCanvas.width = 690;
-			foregroundCanvas.height = backgroundCanvas.height = 650;
-
-			state.map = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__Map__["a" /* default */])(backgroundCanvas, foregroundCanvas);
+			state.map = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__Map__["a" /* default */])(backgroundCanvas, foregroundCanvas, "darkblue");
 
 			state.map.drawStatic();
 			state.map.drawDinamic();
 
-			// set pacman
+			document.querySelector("#cover p span").textContent = state.lives;
+
+			// setup pacman
 			const pacman = state.map.getPacman();
 			pacman.setControls('w', 'd', 's', 'a');
 			pacman.state.destination = state.map.getNextTile(pacman.state.index, pacman.state.currentDirection);
@@ -3862,15 +3934,13 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 			const map = state.map;
 			const layout = map.getMap();
 
-			// console.log(!pacman.isStuck());
-			// console.log(pacman.state);
-
-
 			/** Update pacman's position or change his destination */
-			if (!pacman.isStuck() && pacman.reachDestination()) {
+			if (!pacman.isStuck() && pacman.isNearDestination()) {
+
+				pacman.reachDestination();
 
 				/** Move pacman in the map array to the current position */
-				updateInArray(pacman, layout, function (el) {
+				updateInGameArray(pacman, layout, function (el) {
 					return el.state.type !== 'C';
 				});
 
@@ -3910,20 +3980,29 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 			ghosts.forEach(ghost => {
 				if (!ghost.state.frozen) {
 
-					if (ghost.reachDestination()) {
+					if (ghost.isNearDestination()) {
+
+						ghost.reachDestination();
+
+						// SCARED MANAGEMENT
 						if (pacman.state.power) {
 							ghost.state.scared = true;
 						} else {
 							ghost.state.scared = false;
 						}
+						if (pacman.state.powerAlmostGone) {
+							ghost.state.almostNotScared = true;
+						} else {
+							ghost.state.almostNotScared = false;
+						}
 
 						/** update ghost's position and index in the main game collection(map array) */
-						updateInArray(ghost, layout, function (el) {
+						updateInGameArray(ghost, layout, function (el) {
 							return el.state.color !== ghost.state.color;
 						});
 
 						/** Get all viable next paths for the ghost */
-						let possiblePaths = getPossiblePaths(ghost, map, directions);
+						let possiblePaths = getPossiblePaths(ghost, map, state.directions);
 
 						/** Override normal behaviour when a ghost is in the ghost house */
 						if (ghost.state.inGhostHouse && possiblePaths.some(path => path.tile.static.type === '-')) {
@@ -3952,23 +4031,25 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 
 						/** If the ghost is in an intersection, it follows the next tile that is the closest to it's target(direct distance, not after tiles*/
 						if (possiblePaths.length > 1) {
-							let shortestDistance;
 							let nextPath;
 
-							possiblePaths.forEach(path => {
-								// if the target is not pacman, calculate distance to the static position of the target
-								ghost.state.target.state = ghost.state.target.state || ghost.state.target.static;
+							if (ghost.scared) {
+								nextPath = possiblePaths[__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utility__["c" /* random */])(0, possiblePaths.length)];
+							} else {
+								let shortestDistance;
 
-								const distanceToTarget = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utility__["c" /* distance */])(ghost.state.target.state, path.tile.static);
+								possiblePaths.forEach(path => {
+									const distanceToTarget = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utility__["d" /* distance */])(ghost.state.target.state, path.tile.static);
 
-								shortestDistance = shortestDistance || distanceToTarget;
-								nextPath = nextPath || path;
+									shortestDistance = shortestDistance || distanceToTarget;
+									nextPath = nextPath || path;
 
-								if (distanceToTarget < shortestDistance) {
-									shortestDistance = distanceToTarget;
-									nextPath = path;
-								}
-							});
+									if (distanceToTarget < shortestDistance) {
+										shortestDistance = distanceToTarget;
+										nextPath = path;
+									}
+								});
+							}
 
 							ghost.state.destination = nextPath.tile;
 							ghost.state.direction = nextPath.direction;
@@ -3990,53 +4071,58 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
    * 		if pacman has lives left the current game is reset with the food eaten remaining so
    * 		else the game ends and the player is given the possibility of starting a new one  
    */
-		checkImpact() {
+		actOnCollision() {
 			const pacman = state.map.getPacman();
 			const layout = state.map.getMap();
 			const ghosts = state.map.getGhosts();
 
-			// the background canvas(has food, powerups and walls drawn on it) should be redrawn if any food or powerup is eaten by pacman
-			let redrawStatic = false;
-
 			// run collision detection between pacman and every food, powerup and ghost element in the game
 			layout.forEach(tile => {
 
-				// if pacman hits a ghost restart the current round(pacman has lives left), end game(no lives left) or respawn the ghost
+				/** Test if pacman hits a ghost
+     * if pacman hits a ghost: 
+     * 	restart the current round(pacman has lives left)
+     * 	end game(no lives left)
+     * 	respawn the ghost(pacman has power active)
+     */
 				if (tile.dinamic.length) {
-					// test if the any of the dinamic elements from this tile hit pacman
-					tile.dinamic.forEach(elem => {
-						if (elem.state.type === 'M' && __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utility__["d" /* collide */])(pacman.state, elem.state)) {
-							// active powerup ongoing -> respawn the ghost. pacman is unharmed
-							if (pacman.state.power) {
-								// erase the animated element
-								layout[elem.state.index].dinamic = layout[elem.state.index].dinamic.filter(elem => elem.state.type !== 'M');
+					let ghostsThatHitPacman = tile.dinamic.filter(animatedElement => animatedElement.state.type === 'M' && __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utility__["e" /* collide */])(pacman.state, animatedElement.state));
 
-								// initialize another instance of the animated element in it's original position
-								state.map.initAnimatedElement(elem.state.initIndex, 'M', elem.state.color);
-							} else {
-								state.lives -= 1;
+					ghostsThatHitPacman.forEach(ghost => {
+						if (pacman.state.power) {
+							layout[ghost.state.index].dinamic = layout[ghost.state.index].dinamic.filter(animatedElement => ghost.state.color !== animatedElement.state.color);
 
-								// pacman is out of lives left
-								if (!state.lives) {
-									// RESTART GAME COMPLETELY - PACMAN IS OUT OF LIVES
-								} else {
-									// erase the animated element
-									layout[pacman.state.index].dinamic = layout[pacman.state.index].dinamic.filter(elem => elem.state.type !== 'C');
+							state.map.initAnimatedElement(ghost.state.initIndex, 'M', ghost.state.color);
+						} else if (state.lives > 0) {
+							state.lives -= 1;
+							document.querySelector("#cover p span").textContent = state.lives;
 
-									// initialize another instance of the animated element in it's original position
-									state.map.initAnimatedElement(pacman.state.initIndex, 'C');
+							// Remove pacman
+							layout[pacman.state.index].dinamic = layout[pacman.state.index].dinamic.filter(elem => elem.state.type !== 'C');
+							pacman.removeControls();
 
-									cancelAnimationFrame(state.loopId);
-								}
-							}
+							// Create a new pacman
+							state.map.initAnimatedElement(pacman.state.initIndex, 'C');
+
+							// Respawn ghosts 
+							ghosts.forEach(ghost => {
+								layout[ghost.state.index].dinamic = layout[ghost.state.index].dinamic.filter(elem => elem.state.type !== 'M');
+								state.map.initAnimatedElement(ghost.state.initIndex, 'M', ghost.state.color);
+							});
+
+							pause();
+							state.frozen = true;
+							setTimeout(() => {
+								state.frozen = false;
+							}, 1000);
 						}
 					});
 				}
 
 				// increase score as pacman eats food tiles. Release ghost once pacman eats a part of the total food 
-				if (tile.static.type === '*' && __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utility__["d" /* collide */])(pacman.state, tile.static)) {
+				if (tile.static.type === '*' && __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utility__["e" /* collide */])(pacman.state, tile.static)) {
 					tile.static.type = ' ';
-					redrawStatic = true;
+					state.needsStaticRedraw = true;
 
 					// update the score and the tiles eaten so far (note: the score)
 					state.score += 1;
@@ -4045,30 +4131,39 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 				}
 
 				// If pacman hits a powerup, ghosts become scared for 3 seconds
-				if (tile.static.type === '@' && __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utility__["d" /* collide */])(pacman.state, tile.static)) {
+				if (tile.static.type === '@' && __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utility__["e" /* collide */])(pacman.state, tile.static)) {
 					tile.static.type = ' ';
-					redrawStatic = true;
+					state.needsStaticRedraw = true;
 
 					pacman.state.power = true;
+
+					// interval that enables the ghost animation when the scared state is about to wear out
 					setTimeout(() => {
+						state.almostNotScaredInterval = setInterval(() => {
+							pacman.state.powerAlmostGone = !pacman.state.powerAlmostGone;
+						}, 200);
+					}, 2000);
+
+					// remove the upper interval and set scared to false after 4 seconds 
+					setTimeout(() => {
+						clearInterval(state.almostNotScaredInterval);
+
 						pacman.state.power = false;
-					}, 3000);
+						pacman.state.powerAlmostGone = false;
+					}, 4000);
 				}
 			});
+		},
 
-			return redrawStatic;
+		removeKeyHandler() {
+			state.map.getPacman().removeControls();
 		},
 
 		draw(canvas1, canvas2) {
 			if (!canvas2) {
-				__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utility__["e" /* clear */])({
-					foregroundCanvas
-				});
+				__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utility__["f" /* clear */])(foregroundCanvas);
 			} else {
-				__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utility__["e" /* clear */])({
-					foregroundCanvas,
-					backgroundCanvas
-				});
+				__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utility__["f" /* clear */])(foregroundCanvas, backgroundCanvas);
 				state.map.drawStatic();
 			}
 			state.map.drawDinamic();
@@ -4077,40 +4172,64 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 		// GAME LOOP
 
 		setLoopId(id) {
-			state.loopId = id;
+			state.gameLoopId = id;
 		},
 		isPaused() {
-			return !state.loopId;
+			return !state.gameLoopId;
 		},
 		play(loop) {
-			state.loopId = requestAnimationFrame(loop);
+			state.gameLoopId = requestAnimationFrame(loop);
+			document.querySelector("#cover").style.display = "none";
 		},
-		pause() {
-			cancelAnimationFrame(state.loopId);
-			state.loopId = null;
+		pause,
+		noLivesLeft() {
+			return state.lives === 0;
+		},
+		isFrozen() {
+			return state.frozen;
+		},
+		needsStaticRedraw() {
+			return state.needsStaticRedraw;
 		}
 	});
 };
 
 /* harmony default export */ __webpack_exports__["a"] = (Game);
 
-/*			// const isFood = tile => tile.static.type === '*' ? true : false;
-			// const isGhost = tile => (tile.dinamic.length !== 0 && tile.dinamic.some(tile => tile.state.type === 'M')) ? true : false;
+// pause();
 
-				if (isGhost(el) && collide(pacman.state, el.dinamic[0].state)) {
-					alert("end game");
-				}
- */
-// // When pacman reached his current destination, swap the two objects in the map collection, and update their coordinates and indexes
-// if (pacman.state.needsSwap) {
-// 	map.swap(pacman.state.index, pacman.state.destination.index);
 
-// 	map.swapIndexes(pacman, pacman.state.destination);
+// // Reinitialize every animated element 
+// setTimeout(() => {
 
-// 	pacman.state.destination.x = pacman.oldX;
-// 	pacman.state.destination.y = pacman.oldY;
-// }
-// remove pacman from the last tile's dinamic array
+
+// 	state.delay = false;
+
+// }, 1000);
+
+// state.pacmanInterval = setInterval(() => {
+// 	//debugger;
+
+// 	if (state.intervalHelper % 2 === 0) {
+// 		pacman.draw();
+// 	} else {
+// 		pacman.draw('red')
+// 	}
+
+// 	state.intervalHelper += 1;
+
+// 	if (state.intervalHelper === 4) {
+// 		clearInterval(state.pacmanInterval);
+// 		state.intervalHelper = 0;
+// 		state.pacmanInterval = null;
+// 	}
+// }, 200);
+
+// state.delay = true;
+
+
+// // // pause game after pacman lost a life
+// // pause();
 
 /***/ }),
 /* 119 */
@@ -4133,14 +4252,14 @@ const Ghost = (canvas, x, y, index, tileWidth, tileHeight, color) => {
 		tileWidth,
 		canvas,
 
-		speed: __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utility__["h" /* random */])(1, 3),
+		speed: null,
 		velX: 0,
 		velY: 0,
 
 		type: 'M',
 		color,
 
-		radius: tileWidth * 0.3,
+		radius: tileWidth * 0.2,
 		width: tileWidth * 0.8,
 		height: tileWidth * 0.85,
 
@@ -4153,26 +4272,32 @@ const Ghost = (canvas, x, y, index, tileWidth, tileHeight, color) => {
 
 		idleEyeMovement: false,
 		inGhostHouse: true,
-		scared: false
+		scared: false,
+
+		almostNotScared: false
 	};
 
+	/** Initialize each ghost. Their speed and behaviour varies with it's color */
+
 	if (color === 'skyblue' || color === 'red') {
+		state.speed = color === "red" ? __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utility__["c" /* random */])(2.6, 2.8) : __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utility__["c" /* random */])(2.4, 2.5);
 		state.direction = 'right';
 		state.velX = state.speed;
 	}
 
-	// pink and orange ghost frozen in the beginning of the game
 	if (color === 'pink' || color === 'orange') {
+		state.speed = color === "pink" ? __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utility__["c" /* random */])(2, 2.2) : __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utility__["c" /* random */])(1.6, 1.8);
 		state.direction = 'left';
 		state.velX = -state.speed;
 
 		state.frozen = true;
 	}
 
-	return Object.assign({}, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__Pacman__["b" /* reachDestination */])(state), __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__Pacman__["c" /* directionControl */])(state), __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__Pacman__["d" /* positionUpdate */])(state), {
+	return Object.assign({}, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__Pacman__["b" /* pacmanAndGhostCommon */])(state), {
 		// draw after x, y, width, height
 		draw() {
-			const direction = state.frozen ? state.drawingDirection : state.direction;
+			let scared = state.almostNotScared || !state.scared ? false : true;
+
 			const ctx = canvas.getContext('2d');
 
 			const width = state.width;
@@ -4180,9 +4305,15 @@ const Ghost = (canvas, x, y, index, tileWidth, tileHeight, color) => {
 			const x = state.x;
 			const y = state.y;
 
+			/** If a ghost if frozen, it's direction is changed on a fixed interval to make it look alive
+    * (eye moving through the function randomEyeMovement)
+    */
+			const direction = state.frozen ? state.drawingDirection : state.direction;
+
 			// GHOST BODY
+
 			ctx.beginPath();
-			ctx.fillStyle = state.scared ? 'darkblue' : state.color;
+			ctx.fillStyle = scared ? 'darkblue' : state.color;
 
 			ctx.moveTo(x - width / 2, y + height / 2);
 			ctx.lineTo(x - width / 2, y - height / 10);
@@ -4200,14 +4331,32 @@ const Ghost = (canvas, x, y, index, tileWidth, tileHeight, color) => {
 			ctx.lineTo(x - width / 2, y + height / 2);
 			ctx.fill();
 
-			if (state.scared) {
-				// IRIS
+			/** If the ghost is scared, it has a different styling  */
+			if (scared) {
+				// scared ghost eyes
 				ctx.fillStyle = 'white';
 				ctx.beginPath();
 
 				ctx.arc(x - width / 4, y - height / 7, width / 13, 0, Math.PI * 2);
 				ctx.arc(x + width / 4, y - height / 7, width / 13, 0, Math.PI * 2);
 				ctx.fill();
+
+				// scared ghost mouth
+				ctx.beginPath();
+				ctx.strokeStyle = "white";
+				ctx.lineWidth = 1;
+				ctx.moveTo(x + width / 3.5, y + height / 4);
+
+				ctx.lineTo(x + width / 5, y + height / 5);
+				ctx.lineTo(x + width / 9, y + height / 4);
+
+				ctx.lineTo(x, y + height / 5);
+				ctx.lineTo(x - width / 10, y + height / 4);
+
+				ctx.lineTo(x - width / 5, y + height / 5);
+				ctx.lineTo(x - width / 3.2, y + height / 4);
+
+				ctx.stroke();
 			} else {
 				// Eye holes
 				ctx.beginPath();
@@ -4273,25 +4422,6 @@ const Ghost = (canvas, x, y, index, tileWidth, tileHeight, color) => {
 						alert('In ghost direction switch statement');
 				}
 			}
-
-			if (state.scared) {
-				// MOUTH
-				ctx.beginPath();
-				ctx.strokeStyle = "white";
-				ctx.lineWidth = 1;
-				ctx.moveTo(x + width / 3.5, y + height / 4);
-
-				ctx.lineTo(x + width / 5, y + height / 5);
-				ctx.lineTo(x + width / 9, y + height / 4);
-
-				ctx.lineTo(x, y + height / 5);
-				ctx.lineTo(x - width / 10, y + height / 4);
-
-				ctx.lineTo(x - width / 5, y + height / 5);
-				ctx.lineTo(x - width / 3.2, y + height / 4);
-
-				ctx.stroke();
-			}
 		},
 
 		// create or remove an interval that changes the drawingDirection from time to time, to create the impression of eye movement
@@ -4303,8 +4433,8 @@ const Ghost = (canvas, x, y, index, tileWidth, tileHeight, color) => {
 				const possibleDirections = ['up', 'down', 'left', 'right'];
 
 				state.idleEyeMovement = setInterval(() => {
-					state.drawingDirection = possibleDirections[__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utility__["h" /* random */])(0, 3)]; // !!! attention to default random function
-				}, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utility__["h" /* random */])(2000, 5000));
+					state.drawingDirection = possibleDirections[__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utility__["c" /* random */])(0, 3)]; // !!! attention to default random function
+				}, __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__utility__["c" /* random */])(2000, 5000));
 			}
 		},
 
@@ -4332,44 +4462,48 @@ const Ghost = (canvas, x, y, index, tileWidth, tileHeight, color) => {
 
 
 /** Calculate in what directions a wall can shrink */
-function getDirectionsToEmptyTiles({
-	map,
-	index,
-	width,
-	wallShrink: size = 1
-}) {
+function getDirectionsToEmptyTiles(map, index, wallShrink, mapState) {
 	let topleft = 0;
 	let topright = 0;
 	let bottomleft = 0;
 	let bottomright = 0;
-	let right = 0;
-	let left = 0;
-	let top = 0;
-	let bottom = 0;
 
-	right = map[index + 1] !== undefined && map[index + 1].static.type !== '#' ? size : 0;
-	left = map[index - 1] !== undefined && map[index - 1].static.type !== '#' ? size : 0;
-	top = map[index - width] !== undefined && map[index - width].static.type !== '#' ? size : 0;
-	bottom = map[index + width] !== undefined && map[index + width].static.type !== '#' ? size : 0;
+	const width = mapState.numberOfHorizontalTiles;
+	const height = mapState.numberOfVerticalTiles;
 
-	if (map[index - width - 1]) {
-		if (map[index - width - 1].static.type !== '#' && !top && !left) {
-			topleft = size;
+	// reduce sides 
+
+	let right = (index + 1) % width !== 0 && map[index + 1].static.type !== '#' ? wallShrink : 0;
+	let left = index % width !== 0 && map[index - 1].static.type !== '#' ? wallShrink : 0;
+
+	let top = map[index - width] !== undefined && map[index - width].static.type !== '#' ? wallShrink : 0;
+	let bottom = map[index + width] !== undefined && map[index + width].static.type !== '#' ? wallShrink : 0;
+
+	// reduce corners
+
+	/** Calculate by how much the wall should shrink on certain corners
+  * the first check test whether the current tile is on the side of the map
+  * and prevents it from reducing it's size on that side
+  */
+
+	// topleft and bottomleft corners
+	if (index % width !== 0) {
+		if (map[index - width - 1] && map[index - width - 1].static.type !== '#' && !top && !left) {
+			topleft = wallShrink;
+		}
+		if (map[index + width - 1] && map[index + width - 1].static.type !== '#' && !bottom && !left) {
+			bottomleft = wallShrink;
 		}
 	}
-	if (map[index - width + 1]) {
-		if (map[index - width + 1].static.type !== '#' && !top && !right) {
-			topright = size;
+
+	// topright and bottom right
+	if ((index + 1) % width !== 0) {
+		if (map[index - width + 1] && map[index - width + 1].static.type !== '#' && !top && !right) {
+			topright = wallShrink;
 		}
-	}
-	if (map[index + width - 1]) {
-		if (map[index + width - 1].static.type !== '#' && !bottom && !left) {
-			bottomleft = size;
-		}
-	}
-	if (map[index + width + 1]) {
-		if (map[index + width + 1].static.type !== '#' && !bottom && !right) {
-			bottomright = size;
+
+		if (map[index + width + 1] && map[index + width + 1].static.type !== '#' && !bottom && !right) {
+			bottomright = wallShrink;
 		}
 	}
 
@@ -4385,7 +4519,7 @@ function getDirectionsToEmptyTiles({
 	};
 }
 
-const Map = (backgroundCanvas, foregroundCanvas) => {
+const Map = (backgroundCanvas, foregroundCanvas, wallColor) => {
 	const state = {
 		numberOfHorizontalTiles: __WEBPACK_IMPORTED_MODULE_3__levelEditor__["a" /* default */].numberOfHorizontalTiles,
 		numberOfVerticalTiles: __WEBPACK_IMPORTED_MODULE_3__levelEditor__["a" /* default */].numberOfVerticalTiles,
@@ -4394,13 +4528,17 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 		tileHeight: backgroundCanvas.height / __WEBPACK_IMPORTED_MODULE_3__levelEditor__["a" /* default */].numberOfVerticalTiles,
 
 		layout: __WEBPACK_IMPORTED_MODULE_3__levelEditor__["a" /* default */],
-		foodTilesNumber: 0
+		foodTilesNumber: 0,
+
+		wallColor
 	};
 
-	// Create world
+	state.wallColor = wallColor || "cyan";
 
+	// viable ghost colors. DON'T CHANGE
 	const ghostColors = ['red', 'skyblue', 'pink', 'orange'];
 
+	// initialize every element in the game in the map array
 	const map = state.layout.map((element, index) => {
 		// calculate center coordinates
 		const x = state.tileWidth / 2 + state.tileWidth * (index % state.numberOfHorizontalTiles);
@@ -4455,7 +4593,7 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
    *
    * The function won't execute further if the conditions below are met!!
    */
-		const doubleIndex = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__utility__["f" /* indexToDoubleIndex */])(state.layout, index);
+		const doubleIndex = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__utility__["g" /* indexToDoubleIndex */])(state.layout, index);
 
 		if (doubleIndex[0] === 0 || doubleIndex[0] === width - 1 || doubleIndex[1] === 0 || doubleIndex[1] === height - 1) {
 			let isGoingOut = false;
@@ -4483,7 +4621,7 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
     * after the values of the horizontal and vertival index from above
     */
 			if (isGoingOut) {
-				return map[__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__utility__["g" /* doubleIndexToIndex */])(state.layout, ...doubleIndex)];
+				return map[__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__utility__["h" /* doubleIndexToIndex */])(state.layout, ...doubleIndex)];
 			}
 		}
 
@@ -4528,7 +4666,9 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 		/** Draw walls, food, powerpills and ghost gate. Also reduce the size of walls */
 		drawStatic() {
 			const ctx = backgroundCanvas.getContext('2d');
-			const wallShrink = 4;
+
+			// how much to reduce the wall size
+			const wallShrink = 7;
 
 			map.forEach((el, index) => {
 				/** Draw walls
@@ -4536,8 +4676,9 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
      * smaller I had to reduce only the parts where a part of wall does not face another wall.
      */
 				if (el.static.type === '#') {
-					ctx.fillStyle = 'darkblue';
+					ctx.fillStyle = state.wallColor;
 
+					// calculate by how much each side a wall tile must reduce 
 					const {
 						top,
 						right,
@@ -4547,15 +4688,12 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 						topright,
 						bottomleft,
 						bottomright
-					} = getDirectionsToEmptyTiles({
-						map,
-						index,
-						width: state.numberOfHorizontalTiles,
-						wallShrink
-					});
+					} = getDirectionsToEmptyTiles(map, index, wallShrink, state);
 
+					// draw the wall tile reduced WITHOUT corners reduced as well
 					ctx.fillRect(el.static.x - state.tileWidth / 2 + left, el.static.y - state.tileHeight / 2 + top, state.tileWidth - left - right, state.tileHeight - top - bottom);
 
+					// reduce the size of the corners
 					if (topleft) {
 						ctx.clearRect(el.static.x - state.tileWidth / 2, el.static.y - state.tileHeight / 2, wallShrink, wallShrink);
 					}
@@ -4593,12 +4731,12 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 				// Draw ghost gate
 				if (el.static.type === '-') {
 					ctx.strokeStyle = 'red';
-					ctx.lineWidth = 8;
+					ctx.lineWidth = state.tileWidth / 5;
 
 					ctx.beginPath();
 
-					ctx.moveTo(el.static.x - state.tileWidth / 2 - 3, el.static.y);
-					ctx.lineTo(el.static.x + state.tileWidth / 2 + 3, el.static.y);
+					ctx.moveTo(el.static.x - state.tileWidth / 2 - wallShrink, el.static.y);
+					ctx.lineTo(el.static.x + state.tileWidth / 2 + wallShrink, el.static.y);
 
 					ctx.stroke();
 				}
@@ -4759,9 +4897,10 @@ const Map = (backgroundCanvas, foregroundCanvas) => {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-const layout = ['#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*', '#', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*', '#', '#', '@', '#', '#', '#', '*', '#', '#', '#', '#', '*', '#', '*', '#', '#', '#', '#', '*', '#', '#', '#', '@', '#', '#', '*', '#', '#', '#', '*', '#', '#', '#', '#', '*', '#', '*', '#', '#', '#', '#', '*', '#', '#', '#', '*', '#', '#', 'C', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*', '#', '#', '*', '#', '#', '#', '*', '#', '*', '#', '#', '#', '#', '#', '#', '#', '*', '#', '*', '#', '#', '#', '*', '#', '#', '*', '*', '*', '*', '*', '#', '*', '#', '#', '#', '#', '#', '#', '#', '*', '#', '*', '*', '*', '*', '*', '#', '#', '#', '#', '#', '#', '*', '#', '*', '*', '*', '*', '#', '*', '*', '*', '*', '#', '*', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '*', '#', '#', '#', '#', ' ', '#', ' ', '#', '#', '#', '#', '*', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '*', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', '*', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '*', '#', ' ', '#', '#', '#', '-', '#', '#', '#', ' ', '#', '*', '#', '#', '#', '#', '#', ' ', ' ', ' ', ' ', ' ', '*', ' ', ' ', '#', 'M', 'M', ' ', 'M', 'M', '#', ' ', ' ', '*', ' ', ' ', ' ', ' ', ' ', '#', '#', '#', '#', '#', '*', '#', ' ', '#', '#', '#', '#', '#', '#', '#', ' ', '#', '*', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '*', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', '*', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '*', '#', ' ', '#', '#', '#', '#', '#', '#', '#', ' ', '#', '*', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '*', '#', ' ', '#', '#', '#', '#', '#', '#', '#', ' ', '#', '*', '#', '#', '#', '#', '#', '#', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*', '#', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*', '#', '#', '*', '#', '#', '#', '*', '#', '#', '#', '#', '*', '#', '*', '#', '#', '#', '#', '*', '#', '#', '#', '*', '#', '#', '@', '*', '*', '#', '*', '*', '*', '*', '*', '*', ' ', '*', '*', '*', '*', '*', '*', '#', '*', '*', '@', '#', '#', '#', '#', '*', '#', '*', '#', '*', '#', '#', '#', '#', '#', '#', '#', '*', '#', '*', '#', '*', '#', '#', '#', '#', '*', '*', '*', '*', '*', '#', '*', '*', '*', '*', '#', '*', '*', '*', '*', '#', '*', '*', '*', '*', '*', '#', '#', '*', '#', '#', '#', '#', '#', '#', '#', '#', '*', '#', '*', '#', '#', '#', '#', '#', '#', '#', '#', '*', '#', '#', '*', '#', '#', '#', '#', '#', '#', '#', '#', '*', '#', '*', '#', '#', '#', '#', '#', '#', '#', '#', '*', '#', '#', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*', '*', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#'];
-layout.numberOfHorizontalTiles = 23;
-layout.numberOfVerticalTiles = 25;
+const layout = ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", " ", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "#", "#", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "@", "#", "#", "*", "#", "#", "#", "#", "*", "#", "#", "#", "#", "#", "*", "#", "#", "*", "#", "#", "#", "#", "#", "*", "#", "#", "#", "#", "*", "#", "#", "*", "#", "#", "#", "#", "*", "#", "#", "#", "#", "#", "*", "#", "#", "*", "#", "#", "#", "#", "#", "*", "#", "#", "#", "#", "*", "#", "#", "*", "#", "#", "#", "#", "*", "#", "#", "#", "#", "#", "*", "#", "#", "*", "#", "#", "#", "#", "#", "*", "#", "#", "#", "#", "*", "#", "#", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "#", "#", "*", "#", "#", "#", "#", "*", "#", "#", "*", "#", "#", "#", "#", "#", "#", "#", "#", "*", "#", "#", "*", "#", "#", "#", "#", "*", "#", "#", "*", "#", "#", "#", "#", "*", "#", "#", "*", "#", "#", "#", "#", "#", "#", "#", "#", "*", "#", "#", "*", "#", "#", "#", "#", "*", "#", "#", "*", "*", "*", "*", "*", "*", "#", "#", "*", "*", "*", "*", "#", "#", "*", "*", "*", "*", "#", "#", "*", "*", "*", "*", "*", "*", "#", "#", "*", "#", "#", "#", "#", "*", "#", "#", "#", "#", "#", "*", "#", "#", "*", "#", "#", "#", "#", "#", "*", "#", "#", "#", "#", "*", "#", "#", "*", "#", "#", "#", "#", "*", "#", "#", "#", "#", "#", "*", "#", "#", "*", "#", "#", "#", "#", "#", "*", "#", "#", "#", "#", "*", "#", "#", "*", "#", "#", "#", "#", "*", "#", "#", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "#", "#", "*", "#", "#", "#", "#", "*", "#", "#", "*", "#", "#", "#", "#", "*", "#", "#", " ", "#", "#", "#", "-", "-", "#", "#", "#", " ", "#", "#", "*", "#", "#", "#", "#", "*", "#", "#", "*", "#", "#", "#", "#", "*", "#", "#", " ", "#", "M", "M", " ", " ", "M", "M", "#", " ", "#", "#", "*", "#", "#", "#", "#", "*", "#", "*", "*", "*", "*", "*", "*", "*", "*", "*", " ", "#", "#", "#", "#", "#", "#", "#", "#", " ", "*", "*", "*", "*", "*", "*", "*", "*", "*", "#", "*", "#", "#", "#", "#", "*", "#", "#", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "#", "#", "*", "#", "#", "#", "#", "*", "#", "#", "*", "#", "#", "#", "#", "*", "#", "#", " ", "#", "#", "#", "#", "#", "#", "#", "#", " ", "#", "#", "*", "#", "#", "#", "#", "*", "#", "#", "*", "#", "#", "#", "#", "*", "#", "#", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "#", "#", "*", "#", "#", "#", "#", "*", "#", "#", "*", "#", "#", "#", "#", "*", "#", "#", "*", "#", "#", "#", "#", "#", "#", "#", "#", "*", "#", "#", "*", "#", "#", "#", "#", "*", "#", "#", "*", "#", "#", "#", "#", "*", "#", "#", "*", "#", "#", "#", "#", "#", "#", "#", "#", "*", "#", "#", "*", "#", "#", "#", "#", "*", "#", "#", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "#", "#", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "#", "#", "*", "#", "#", "#", "#", "*", "#", "#", "#", "#", "#", "*", "#", "#", "*", "#", "#", "#", "#", "#", "*", "#", "#", "#", "#", "*", "#", "#", "*", "#", "#", "#", "#", "*", "#", "#", "#", "#", "#", "*", "#", "#", "*", "#", "#", "#", "#", "#", "*", "#", "#", "#", "#", "*", "#", "#", "*", "*", "*", "#", "#", "*", "*", "*", "*", "*", "*", "*", "C", "*", "*", "*", "*", "*", "*", "*", "*", "#", "#", "*", "*", "*", "#", "#", "#", "#", "*", "#", "#", "*", "#", "#", "*", "#", "#", "#", "#", "#", "#", "#", "#", "*", "#", "#", "*", "#", "#", "*", "#", "#", "#", "#", "#", "#", "*", "#", "#", "*", "#", "#", "*", "#", "#", "#", "#", "#", "#", "#", "#", "*", "#", "#", "*", "#", "#", "*", "#", "#", "#", "#", "*", "*", "*", "*", "*", "*", "#", "#", "*", "*", "*", "*", "#", "#", "*", "*", "*", "*", "#", "#", "*", "*", "*", "*", "*", "*", "#", "#", "*", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "*", "#", "#", "*", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "*", "#", "#", "*", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "*", "#", "#", "*", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "*", "#", "#", "@", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", " ", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"];
+
+layout.numberOfHorizontalTiles = 28;
+layout.numberOfVerticalTiles = 31;
 
 /* harmony default export */ __webpack_exports__["a"] = (layout);
 
