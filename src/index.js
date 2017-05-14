@@ -18,8 +18,8 @@ const cover = document.querySelector("#cover");
 cover.style.width = gameWidth + "px";
 cover.style.height = gameHeight + "px";
 
-foregroundCanvas.width = backgroundCanvas.width = gameWidth; 
-foregroundCanvas.height = backgroundCanvas.height = gameHeight; 
+foregroundCanvas.width = backgroundCanvas.width = gameWidth;
+foregroundCanvas.height = backgroundCanvas.height = gameHeight;
 
 
 
@@ -42,7 +42,6 @@ document.addEventListener('keydown', e => {
 });
 
 
-
 // game loop
 
 const loop = () => {
@@ -56,29 +55,46 @@ const loop = () => {
 	// check if pacman collides with any element
 	game.actOnCollision();
 
-	if (game.needsStaticRedraw()) { 
-		game.draw('front', 'back');
+	if (game.isFrozen()) {
+		setTimeout(() => {
+			if (game.needsStaticRedraw()) {
+				game.draw('front', 'back');
+			} else {
+				game.draw('front');
+			}
+
+			/** Create a new game by overwriting the existing game object */
+			if (game.noLivesLeft()) {
+				game.pause();
+				game.removeKeyHandler();
+
+				game = Game(backgroundCanvas, foregroundCanvas);
+				game.initialize();
+			}
+		}, 1000);
 	} else {
-		game.draw('front');
+		if (game.needsStaticRedraw()) {
+			game.draw('front', 'back');
+		} else {
+			game.draw('front');
+		}
+
+		/** Create a new game by overwriting the existing game object */
+		if (game.noLivesLeft()) {
+			game.pause();
+			game.removeKeyHandler();
+
+			game = Game(backgroundCanvas, foregroundCanvas);
+			game.initialize();
+		}
 	}
 
-	
-
-
-	/** Create a new game by overwriting the existing game object */
-	if (game.noLivesLeft()) {
-		game.pause();
-		game.removeKeyHandler();
-
-		game = Game(backgroundCanvas, foregroundCanvas);
-		game.initialize();
-	}
 };
 
-		// if (game.isDelayed) {
-		// 	setTimeout(() => {
-		// 		game.draw('front', 'back');
-		// 	}, 1500);
-		// } else {
-		// 	game.draw('front', 'back');
-		// }
+// if (game.isDelayed) {
+// 	setTimeout(() => {
+// 		game.draw('front', 'back');
+// 	}, 1500);
+// } else {
+// 	game.draw('front', 'back');
+// }

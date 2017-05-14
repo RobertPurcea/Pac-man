@@ -20,7 +20,7 @@ const Ghost = (canvas, x, y, index, tileWidth, tileHeight, color) => {
 		type: 'M',
 		color,
 
-		radius: tileWidth * 0.3,
+		radius: tileWidth * 0.2,
 		width: tileWidth * 0.8,
 		height: tileWidth * 0.85,
 

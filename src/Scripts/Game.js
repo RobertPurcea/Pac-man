@@ -70,7 +70,16 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 		almostNotScaredInterval: null,
 		pacmanInterval: null,
 		intervalHelper: 0,
+
+		frozen: null
 	};
+
+	function pause() {
+		cancelAnimationFrame(state.gameLoopId);
+		state.gameLoopId = null;
+
+		document.querySelector("#cover").style.display = "block";
+	}
 
 	return Object.assign({}, {
 
@@ -79,6 +88,8 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 
 			state.map.drawStatic();
 			state.map.drawDinamic();
+
+			document.querySelector("#cover p span").textContent = state.lives;
 
 			// setup pacman
 			const pacman = state.map.getPacman();
@@ -280,8 +291,9 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 							));
 
 							state.map.initAnimatedElement(ghost.state.initIndex, 'M', ghost.state.color);
-						} else {
+						} else if (state.lives > 0) {
 							state.lives -= 1;
+							document.querySelector("#cover p span").textContent = state.lives;
 
 							// Remove pacman
 							layout[pacman.state.index].dinamic = layout[pacman.state.index].dinamic.filter(elem => (
@@ -297,6 +309,12 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 								layout[ghost.state.index].dinamic = layout[ghost.state.index].dinamic.filter(elem => elem.state.type !== 'M');
 								state.map.initAnimatedElement(ghost.state.initIndex, 'M', ghost.state.color);
 							});
+
+							pause();
+							state.frozen = true;
+							setTimeout(() => {
+								state.frozen = false;
+							}, 1000);
 						}
 					});
 				}
@@ -370,16 +388,14 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 		},
 		play(loop) {
 			state.gameLoopId = requestAnimationFrame(loop);
+			document.querySelector("#cover").style.display = "none";
 		},
-		pause() {
-			cancelAnimationFrame(state.gameLoopId);
-			state.gameLoopId = null;
-		},
+		pause,
 		noLivesLeft() {
 			return state.lives === 0;
 		},
-		isDelayed() {
-			return state.delay;
+		isFrozen() {
+			return state.frozen;
 		},
 		needsStaticRedraw() {
 			return state.needsStaticRedraw;
