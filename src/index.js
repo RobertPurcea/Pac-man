@@ -6,15 +6,31 @@ console.clear();
 
 
 
-// SETUP 
+// setup canvas and game interface dimensions 
+
+const gameWidth = 840; // multiple of 28
+const gameHeight = 775; // multiple of 31
 
 const backgroundCanvas = document.querySelector("#background");
 const foregroundCanvas = document.querySelector("#foreground");
+const cover = document.querySelector("#cover");
+
+cover.style.width = gameWidth + "px";
+cover.style.height = gameHeight + "px";
+
+foregroundCanvas.width = backgroundCanvas.width = gameWidth; 
+foregroundCanvas.height = backgroundCanvas.height = gameHeight; 
+
+
+
+
+// initialize game 
 
 let game = Game(backgroundCanvas, foregroundCanvas);
+
 game.initialize();
 
-/** Start or pause the game on spacebar keypress */
+/** Allow pausing/resuming the game by pressing spacebar*/
 document.addEventListener('keydown', e => {
 	if (e.key === ' ') {
 		if (game.isPaused()) {
@@ -26,7 +42,8 @@ document.addEventListener('keydown', e => {
 });
 
 
-// GAME LOOP
+
+// game loop
 
 const loop = () => {
 	// call loop async
@@ -36,15 +53,9 @@ const loop = () => {
 	game.movePacman();
 	game.moveGhosts();
 
-	// check if pacman collides with any element. Act accordingly
+	// check if pacman collides with any element
 	if (game.checkImpact()) {
-		if (game.isDelayed) {
-			setTimeout(() => {
-				game.draw('front', 'back');
-			}, 1500);
-		} else {
-			game.draw('front', 'back');
-		}
+		game.draw('front', 'back');
 	} else {
 		game.draw('front');
 	}
@@ -52,7 +63,17 @@ const loop = () => {
 	// End game if pacman has no lives left 
 	if (game.noLivesLeft()) {
 		game.pause();
+		game.removeKeyHandler();
+		
 		game = Game(backgroundCanvas, foregroundCanvas);
 		game.initialize();
 	}
 };
+
+		// if (game.isDelayed) {
+		// 	setTimeout(() => {
+		// 		game.draw('front', 'back');
+		// 	}, 1500);
+		// } else {
+		// 	game.draw('front', 'back');
+		// }

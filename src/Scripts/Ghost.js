@@ -1,11 +1,5 @@
-import {
-	reachDestination,
-	directionControl,
-	positionUpdate,
-} from './Pacman';
-import {
-	random,
-} from './utility';
+import { pacmanAndGhostCommon } from './Pacman';
+import { random } from './utility';
 
 
 const Ghost = (canvas, x, y, index, tileWidth, tileHeight, color) => {
@@ -60,7 +54,7 @@ const Ghost = (canvas, x, y, index, tileWidth, tileHeight, color) => {
 		state.frozen = true;
 	}
 
-	return Object.assign({}, reachDestination(state), directionControl(state), positionUpdate(state), {
+	return Object.assign({}, pacmanAndGhostCommon(state), {
 		// draw after x, y, width, height
 		draw() {
 			let scared = state.almostNotScared || !state.scared ? false : true;

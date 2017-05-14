@@ -9,7 +9,7 @@ import {
 } from './utility';
 
 /** Remove a dinamic element from it's current tile, and add it to it's destination's tile(modifying it's index too) */
-function updateInArray(element, layout, condition) {
+function updateInGameArray(element, layout, condition) {
 	// remove from the last tile
 	layout[element.state.index].dinamic = layout[element.state.index].dinamic.filter(el => condition(el));
 
@@ -62,32 +62,25 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 	const state = {
 		score: 0,
 		lives: 3,
-		loopId: null,
+		directions: ['right', 'left', 'down', 'up'],
+
+		gameLoopId: null,
+
 
 		almostNotScaredInterval: null,
 		pacmanInterval: null,
 		intervalHelper: 0,
 	};
-	const directions = ['right', 'left', 'down', 'up'];
-
 
 	return Object.assign({}, {
 
 		initialize() {
-			const cover = document.querySelector("#cover");
-			cover.style.width = 700 + "px";
-			cover.style.height = 651 + "px";
-
-			foregroundCanvas.width = backgroundCanvas.width = cover.style.width = 700; // original: 700, 651
-			foregroundCanvas.height = backgroundCanvas.height = cover.style.height = 651; // 
-
-
 			state.map = Map(backgroundCanvas, foregroundCanvas, "darkblue");
 
 			state.map.drawStatic();
 			state.map.drawDinamic();
 
-			// set pacman
+			// setup pacman
 			const pacman = state.map.getPacman();
 			pacman.setControls('w', 'd', 's', 'a');
 			pacman.state.destination = state.map.getNextTile(pacman.state.index, pacman.state.currentDirection);
@@ -109,10 +102,12 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 
 
 			/** Update pacman's position or change his destination */
-			if (!pacman.isStuck() && pacman.reachDestination()) {
+			if (!pacman.isStuck() && pacman.isNearDestination()) {
+
+				pacman.reachDestination();
 
 				/** Move pacman in the map array to the current position */
-				updateInArray(pacman, layout, function (el) {
+				updateInGameArray(pacman, layout, function (el) {
 					return el.state.type !== 'C';
 				});
 
@@ -156,7 +151,9 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 			ghosts.forEach(ghost => {
 				if (!ghost.state.frozen) {
 
-					if (ghost.reachDestination()) {
+					if (ghost.isNearDestination()) {
+
+						ghost.reachDestination();
 
 						// SCARED MANAGEMENT
 						if (pacman.state.power) {
@@ -172,13 +169,13 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 
 
 						/** update ghost's position and index in the main game collection(map array) */
-						updateInArray(ghost, layout, function (el) {
+						updateInGameArray(ghost, layout, function (el) {
 							return el.state.color !== ghost.state.color;
 						});
 
 
 						/** Get all viable next paths for the ghost */
-						let possiblePaths = getPossiblePaths(ghost, map, directions);
+						let possiblePaths = getPossiblePaths(ghost, map, state.directions);
 
 
 						/** Override normal behaviour when a ghost is in the ghost house */
@@ -281,53 +278,17 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 							} else {
 								state.lives -= 1;
 
-								pause();
+								// Respawn pacman
+								layout[pacman.state.index].dinamic = layout[pacman.state.index].dinamic.filter(elem => elem.state.type !== 'C');
+								pacman.removeControls();
 
+								state.map.initAnimatedElement(pacman.state.initIndex, 'C');
 
-								// Reinitialize every animated element 
-								setTimeout(() => {
-
-									// Respawn pacman
-									layout[pacman.state.index].dinamic = layout[pacman.state.index].dinamic.filter(elem => elem.state.type !== 'C');
-									state.map.initAnimatedElement(pacman.state.initIndex, 'C');
-
-									// Respawn ghosts 
-									ghosts.forEach(ghost => {
-										layout[ghost.state.index].dinamic = layout[ghost.state.index].dinamic.filter(elem => elem.state.type !== 'M');
-										state.map.initAnimatedElement(ghost.state.initIndex, 'M', ghost.state.color);
-									});
-
-									state.delay = false;
-
-								}, 1000);
-
-								state.pacmanInterval = setInterval(() => {
-									//debugger;
-
-									if (state.intervalHelper % 2 === 0) {
-										pacman.draw();
-									} else {
-										pacman.draw('red')
-									}
-
-									state.intervalHelper += 1;
-
-									if (state.intervalHelper === 4) {
-										clearInterval(state.pacmanInterval);
-										state.intervalHelper = 0;
-										state.pacmanInterval = null;
-									}
-								}, 200);
-
-								state.delay = true;
-
-
-
-
-
-
-								// // pause game after pacman lost a life
-								// pause();
+								// Respawn ghosts 
+								ghosts.forEach(ghost => {
+									layout[ghost.state.index].dinamic = layout[ghost.state.index].dinamic.filter(elem => elem.state.type !== 'M');
+									state.map.initAnimatedElement(ghost.state.initIndex, 'M', ghost.state.color);
+								});
 							}
 						}
 					});
@@ -356,7 +317,7 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 					setTimeout(() => {
 						state.almostNotScaredInterval = setInterval(() => {
 							pacman.state.powerAlmostGone = !pacman.state.powerAlmostGone;
-						}, 300);
+						}, 200);
 					}, 2000);
 
 					// remove the upper interval and set scared to false after 4 seconds 
@@ -375,6 +336,10 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 
 		},
 
+		removeKeyHandler() {
+			state.map.getPacman().removeControls();
+		},
+
 		draw(canvas1, canvas2) {
 			if (!canvas2) {
 				clear(foregroundCanvas);
@@ -388,17 +353,17 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 		// GAME LOOP
 
 		setLoopId(id) {
-			state.loopId = id;
+			state.gameLoopId= id;
 		},
 		isPaused() {
-			return !state.loopId;
+			return !state.gameLoopId;
 		},
 		play(loop) {
-			state.loopId = requestAnimationFrame(loop);
+			state.gameLoopId = requestAnimationFrame(loop);
 		},
 		pause() {
-			cancelAnimationFrame(state.loopId);
-			state.loopId = null;
+			cancelAnimationFrame(state.gameLoopId);
+			state.gameLoopId = null;
 		},
 		noLivesLeft() {
 			return state.lives === 0;
@@ -412,20 +377,41 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 export default Game;
 
 
-/*			// const isFood = tile => tile.static.type === '*' ? true : false;
-			// const isGhost = tile => (tile.dinamic.length !== 0 && tile.dinamic.some(tile => tile.state.type === 'M')) ? true : false;
+// pause();
 
-				if (isGhost(el) && collide(pacman.state, el.dinamic[0].state)) {
-					alert("end game");
-				}
- */
-// // When pacman reached his current destination, swap the two objects in the map collection, and update their coordinates and indexes
-// if (pacman.state.needsSwap) {
-// 	map.swap(pacman.state.index, pacman.state.destination.index);
 
-// 	map.swapIndexes(pacman, pacman.state.destination);
+// // Reinitialize every animated element 
+// setTimeout(() => {
 
-// 	pacman.state.destination.x = pacman.oldX;
-// 	pacman.state.destination.y = pacman.oldY;
-// }
-// remove pacman from the last tile's dinamic array
+
+// 	state.delay = false;
+
+// }, 1000);
+
+// state.pacmanInterval = setInterval(() => {
+// 	//debugger;
+
+// 	if (state.intervalHelper % 2 === 0) {
+// 		pacman.draw();
+// 	} else {
+// 		pacman.draw('red')
+// 	}
+
+// 	state.intervalHelper += 1;
+
+// 	if (state.intervalHelper === 4) {
+// 		clearInterval(state.pacmanInterval);
+// 		state.intervalHelper = 0;
+// 		state.pacmanInterval = null;
+// 	}
+// }, 200);
+
+// state.delay = true;
+
+
+
+
+
+
+// // // pause game after pacman lost a life
+// // pause();
