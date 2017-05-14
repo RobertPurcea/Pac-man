@@ -71,6 +71,7 @@ const random = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 // count how many times an element appears in an array with a given condition
 const count = (array, condition) => array.reduce((acc, val) => condition(val) ? ++acc : acc, 0);
 
+
 export {
 	round,
 	random,

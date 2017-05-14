@@ -65,7 +65,7 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 		directions: ['right', 'left', 'down', 'up'],
 
 		gameLoopId: null,
-
+		needsStaticRedraw: null,
 
 		almostNotScaredInterval: null,
 		pacmanInterval: null,
@@ -94,6 +94,8 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 			});
 
 		},
+
+
 
 		movePacman() {
 			const pacman = state.map.getPacman();
@@ -252,44 +254,49 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 		 * 		if pacman has lives left the current game is reset with the food eaten remaining so
 		 * 		else the game ends and the player is given the possibility of starting a new one  
 		 */
-		checkImpact() {
+		actOnCollision() {
 			const pacman = state.map.getPacman();
 			const layout = state.map.getMap();
 			const ghosts = state.map.getGhosts();
 
-			// the background canvas(has food, powerups and walls drawn on it) should be redrawn if any food or powerup is eaten by pacman
-			let redrawStatic = false;
-
 			// run collision detection between pacman and every food, powerup and ghost element in the game
 			layout.forEach(tile => {
 
-				// if pacman hits a ghost restart the current round(pacman has lives left), end game(no lives left) or respawn the ghost
+				/** Test if pacman hits a ghost
+				 * if pacman hits a ghost: 
+				 * 	restart the current round(pacman has lives left)
+				 * 	end game(no lives left)
+				 * 	respawn the ghost(pacman has power active)
+				 */
 				if (tile.dinamic.length) {
-					// test if the any of the dinamic elements from this tile hit pacman
-					tile.dinamic.forEach(elem => {
-						if (elem.state.type === 'M' && collide(pacman.state, elem.state)) {
+					let ghostsThatHitPacman = tile.dinamic.filter(animatedElement => (
+						animatedElement.state.type === 'M' && collide(pacman.state, animatedElement.state)
+					));
 
-							// active powerup ongoing -> respawn the ghost. pacman is unharmed
-							if (pacman.state.power) {
-								layout[elem.state.index].dinamic = layout[elem.state.index].dinamic.filter(animatedElement => (
-									elem.state.color !== animatedElement.state.color
-								));
-								state.map.initAnimatedElement(elem.state.initIndex, 'M', elem.state.color);
-							} else {
-								state.lives -= 1;
+					ghostsThatHitPacman.forEach(ghost => {
+						if (pacman.state.power) {
+							layout[ghost.state.index].dinamic = layout[ghost.state.index].dinamic.filter(animatedElement => (
+								ghost.state.color !== animatedElement.state.color
+							));
 
-								// Respawn pacman
-								layout[pacman.state.index].dinamic = layout[pacman.state.index].dinamic.filter(elem => elem.state.type !== 'C');
-								pacman.removeControls();
+							state.map.initAnimatedElement(ghost.state.initIndex, 'M', ghost.state.color);
+						} else {
+							state.lives -= 1;
 
-								state.map.initAnimatedElement(pacman.state.initIndex, 'C');
+							// Remove pacman
+							layout[pacman.state.index].dinamic = layout[pacman.state.index].dinamic.filter(elem => (
+								elem.state.type !== 'C'
+							));
+							pacman.removeControls();
 
-								// Respawn ghosts 
-								ghosts.forEach(ghost => {
-									layout[ghost.state.index].dinamic = layout[ghost.state.index].dinamic.filter(elem => elem.state.type !== 'M');
-									state.map.initAnimatedElement(ghost.state.initIndex, 'M', ghost.state.color);
-								});
-							}
+							// Create a new pacman
+							state.map.initAnimatedElement(pacman.state.initIndex, 'C');
+
+							// Respawn ghosts 
+							ghosts.forEach(ghost => {
+								layout[ghost.state.index].dinamic = layout[ghost.state.index].dinamic.filter(elem => elem.state.type !== 'M');
+								state.map.initAnimatedElement(ghost.state.initIndex, 'M', ghost.state.color);
+							});
 						}
 					});
 				}
@@ -297,7 +304,7 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 				// increase score as pacman eats food tiles. Release ghost once pacman eats a part of the total food 
 				if (tile.static.type === '*' && collide(pacman.state, tile.static)) {
 					tile.static.type = ' ';
-					redrawStatic = true;
+					state.needsStaticRedraw = true;
 
 					// update the score and the tiles eaten so far (note: the score)
 					state.score += 1;
@@ -309,7 +316,7 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 				// If pacman hits a powerup, ghosts become scared for 3 seconds
 				if (tile.static.type === '@' && collide(pacman.state, tile.static)) {
 					tile.static.type = ' ';
-					redrawStatic = true;
+					state.needsStaticRedraw = true;
 
 					pacman.state.power = true;
 
@@ -332,8 +339,6 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 
 			});
 
-			return redrawStatic;
-
 		},
 
 		removeKeyHandler() {
@@ -350,10 +355,15 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 			state.map.drawDinamic();
 		},
 
+
+
+
+
+
 		// GAME LOOP
 
 		setLoopId(id) {
-			state.gameLoopId= id;
+			state.gameLoopId = id;
 		},
 		isPaused() {
 			return !state.gameLoopId;
@@ -370,6 +380,9 @@ const Game = (backgroundCanvas, foregroundCanvas) => {
 		},
 		isDelayed() {
 			return state.delay;
+		},
+		needsStaticRedraw() {
+			return state.needsStaticRedraw;
 		}
 	});
 };

@@ -41,7 +41,7 @@ const Ghost = (canvas, x, y, index, tileWidth, tileHeight, color) => {
 	/** Initialize each ghost. Their speed and behaviour varies with it's color */
 
 	if (color === 'skyblue' || color === 'red') {
-		state.speed = color === "red" ? random(2.8, 3) : random(2.4, 2.6);
+		state.speed = color === "red" ? random(2.6, 2.8) : random(2.4, 2.5);
 		state.direction = 'right';
 		state.velX = state.speed;
 	}

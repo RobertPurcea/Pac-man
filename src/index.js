@@ -54,17 +54,22 @@ const loop = () => {
 	game.moveGhosts();
 
 	// check if pacman collides with any element
-	if (game.checkImpact()) {
+	game.actOnCollision();
+
+	if (game.needsStaticRedraw()) { 
 		game.draw('front', 'back');
 	} else {
 		game.draw('front');
 	}
 
-	// End game if pacman has no lives left 
+	
+
+
+	/** Create a new game by overwriting the existing game object */
 	if (game.noLivesLeft()) {
 		game.pause();
 		game.removeKeyHandler();
-		
+
 		game = Game(backgroundCanvas, foregroundCanvas);
 		game.initialize();
 	}
