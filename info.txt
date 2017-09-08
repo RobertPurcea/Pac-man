@@ -1,7 +1,7 @@
 Replaced state.stuck with state.freeze
 Replaced state.userDirection with state.wantedUserDirection
 Replaced state.validDirection with state.currentDirection
-ss
+
 TO DO
 see if you can remove pacman.type
 
