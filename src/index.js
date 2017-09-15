@@ -65,11 +65,7 @@ const loop = () => {
 
 			/** Create a new game by overwriting the existing game object */
 			if (game.noLivesLeft()) {
-				game.pause();
-				game.removeKeyHandler();
-
-				game = Game(backgroundCanvas, foregroundCanvas);
-				game.initialize();
+				newGame();
 			}
 		}, 1000);
 	} else {
@@ -81,20 +77,17 @@ const loop = () => {
 
 		/** Create a new game by overwriting the existing game object */
 		if (game.noLivesLeft()) {
-			game.pause();
-			game.removeKeyHandler();
-
-			game = Game(backgroundCanvas, foregroundCanvas);
-			game.initialize();
+			newGame();
 		}
 	}
 
 };
 
-// if (game.isDelayed) {
-// 	setTimeout(() => {
-// 		game.draw('front', 'back');
-// 	}, 1500);
-// } else {
-// 	game.draw('front', 'back');
-// }
+/** Create a new game by overwriting the existing game object */
+function newGame() {
+	game.pause();
+	game.removeKeyHandler();
+
+	game = Game(backgroundCanvas, foregroundCanvas);
+	game.initialize();
+}
