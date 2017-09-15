@@ -57,25 +57,15 @@ const loop = () => {
 
 	if (game.isFrozen()) {
 		setTimeout(() => {
-			if (game.needsStaticRedraw()) {
-				game.draw('front', 'back');
-			} else {
-				game.draw('front');
-			}
+			drawCanvas();
 
-			/** Create a new game by overwriting the existing game object */
 			if (game.noLivesLeft()) {
 				newGame();
 			}
 		}, 1000);
 	} else {
-		if (game.needsStaticRedraw()) {
-			game.draw('front', 'back');
-		} else {
-			game.draw('front');
-		}
+		drawCanvas();
 
-		/** Create a new game by overwriting the existing game object */
 		if (game.noLivesLeft()) {
 			newGame();
 		}
@@ -90,4 +80,12 @@ function newGame() {
 
 	game = Game(backgroundCanvas, foregroundCanvas);
 	game.initialize();
+}
+
+function drawCanvas() {
+	if (game.needsStaticRedraw()) {
+		game.draw('front', 'back');
+	} else {
+		game.draw('front');
+	}
 }
